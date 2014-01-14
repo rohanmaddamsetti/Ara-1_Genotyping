@@ -1,0 +1,268 @@
+[Header]
+File_Format_Version,1
+Title,Lenski Plate 2
+Code_Symbology,CS17_101a
+Plate_Type,Costar 96
+Attributes,"UserEditable, GenerateIDATs, GenerateStandardCSV"
+Comments,Enter any experiment or scan comments.
+
+[Columns]
+Column,Color,PMT_Gain,Red_Laser_Power,Comments
+1,Both,1,1,
+2,Both,1,1,
+3,Both,1,1,
+4,Both,1,1,
+5,Both,1,1,
+6,Both,1,1,
+7,Both,1,1,
+8,Both,1,1,
+9,Both,1,1,
+10,Both,1,1,
+11,Both,1,1,
+12,Both,1,1,
+
+[Wells]
+Column,Row,Kit_Number,Sample,Comments
+1,A,1,A1,
+1,B,1,B1,
+1,C,1,C1,
+1,D,1,D1,
+1,E,1,E1,
+1,F,1,F1,
+1,G,1,G1,
+1,H,1,H1,
+2,A,1,A2,
+2,B,1,B2,
+2,C,1,C2,
+2,D,1,D2,
+2,E,1,E2,
+2,F,1,F2,
+2,G,1,G2,
+2,H,1,H2,
+3,A,1,A3,
+3,B,1,B3,
+3,C,1,C3,
+3,D,1,D3,
+3,E,1,E3,
+3,F,1,F3,
+3,G,1,G3,
+3,H,1,H3,
+4,A,1,A4,
+4,B,1,B4,
+4,C,1,C4,
+4,D,1,D4,
+4,E,1,E4,
+4,F,1,F4,
+4,G,1,G4,
+4,H,1,H4,
+5,A,1,A5,
+5,B,1,B5,
+5,C,1,C5,
+5,D,1,D5,
+5,E,1,E5,
+5,F,1,F5,
+5,G,1,G5,
+5,H,1,H5,
+6,A,1,A6,
+6,B,1,B6,
+6,C,1,C6,
+6,D,1,D6,
+6,E,1,E6,
+6,F,1,F6,
+6,G,1,G6,
+6,H,1,H6,
+7,A,1,A7,
+7,B,1,B7,
+7,C,1,C7,
+7,D,1,D7,
+7,E,1,E7,
+7,F,1,F7,
+7,G,1,G7,
+7,H,1,H7,
+8,A,1,A8,
+8,B,1,B8,
+8,C,1,C8,
+8,D,1,D8,
+8,E,1,E8,
+8,F,1,F8,
+8,G,1,G8,
+8,H,1,H8,
+9,A,1,A9,
+9,B,1,B9,
+9,C,1,C9,
+9,D,1,D9,
+9,E,1,E9,
+9,F,1,F9,
+9,G,1,G9,
+9,H,1,H9,
+10,A,1,A10,
+10,B,1,B10,
+10,C,1,C10,
+10,D,1,D10,
+10,E,1,E10,
+10,F,1,F10,
+10,G,1,G10,
+10,H,1,H10,
+11,A,1,A11,
+11,B,1,B11,
+11,C,1,C11,
+11,D,1,D11,
+11,E,1,E11,
+11,F,1,F11,
+11,G,1,G11,
+11,H,1,H11,
+12,A,1,A12,
+12,B,1,B12,
+12,C,1,C12,
+12,D,1,D12,
+12,E,1,E12,
+12,F,1,F12,
+12,G,1,G12,
+12,H,1,H12,
+
+[Kits]
+Kit_Number,VeraCode,Probe_ID,IllumiCode,Replicate,Comments
+1,1,44,44,27,"144-plex bead plate"
+1,2,137,137,27,"144-plex bead plate"
+1,4,237,237,27,"144-plex bead plate"
+1,5,278,278,27,"144-plex bead plate"
+1,6,10,10,27,"144-plex bead plate"
+1,7,23,23,27,"144-plex bead plate"
+1,8,279,279,27,"144-plex bead plate"
+1,9,33,33,27,"144-plex bead plate"
+1,10,329,329,27,"144-plex bead plate"
+1,11,51,51,27,"144-plex bead plate"
+1,12,54,54,27,"144-plex bead plate"
+1,13,56,56,27,"144-plex bead plate"
+1,14,67,67,27,"144-plex bead plate"
+1,15,101,101,27,"144-plex bead plate"
+1,16,501,501,27,"144-plex bead plate"
+1,17,526,526,27,"144-plex bead plate"
+1,18,102,102,27,"144-plex bead plate"
+1,19,113,113,27,"144-plex bead plate"
+1,20,590,590,27,"144-plex bead plate"
+1,21,119,119,27,"144-plex bead plate"
+1,22,130,130,27,"144-plex bead plate"
+1,24,153,153,27,"144-plex bead plate"
+1,25,154,154,27,"144-plex bead plate"
+1,26,162,162,27,"144-plex bead plate"
+1,27,178,178,27,"144-plex bead plate"
+1,28,186,186,27,"144-plex bead plate"
+1,30,209,209,27,"144-plex bead plate"
+1,32,592,592,27,"144-plex bead plate"
+1,33,215,215,27,"144-plex bead plate"
+1,34,658,658,27,"144-plex bead plate"
+1,35,233,233,27,"144-plex bead plate"
+1,36,234,234,27,"144-plex bead plate"
+1,37,265,265,27,"144-plex bead plate"
+1,38,300,300,27,"144-plex bead plate"
+1,39,331,331,27,"144-plex bead plate"
+1,40,662,662,27,"144-plex bead plate"
+1,41,398,398,27,"144-plex bead plate"
+1,42,430,430,27,"144-plex bead plate"
+1,44,442,442,27,"144-plex bead plate"
+1,45,480,480,27,"144-plex bead plate"
+1,48,515,515,27,"144-plex bead plate"
+1,49,559,559,27,"144-plex bead plate"
+1,50,585,585,27,"144-plex bead plate"
+1,51,607,607,27,"144-plex bead plate"
+1,52,614,614,27,"144-plex bead plate"
+1,54,619,619,27,"144-plex bead plate"
+1,56,629,629,27,"144-plex bead plate"
+1,57,634,634,27,"144-plex bead plate"
+1,60,651,651,27,"144-plex bead plate"
+1,64,737,737,27,"144-plex bead plate"
+1,65,858,858,27,"144-plex bead plate"
+1,66,656,656,27,"144-plex bead plate"
+1,67,674,674,27,"144-plex bead plate"
+1,68,910,910,27,"144-plex bead plate"
+1,69,682,682,27,"144-plex bead plate"
+1,70,718,718,27,"144-plex bead plate"
+1,72,720,720,27,"144-plex bead plate"
+1,73,732,732,27,"144-plex bead plate"
+1,74,742,742,27,"144-plex bead plate"
+1,75,747,747,27,"144-plex bead plate"
+1,76,753,753,27,"144-plex bead plate"
+1,78,756,756,27,"144-plex bead plate"
+1,80,912,912,27,"144-plex bead plate"
+1,81,764,764,27,"144-plex bead plate"
+1,82,813,813,27,"144-plex bead plate"
+1,84,814,814,27,"144-plex bead plate"
+1,85,859,859,27,"144-plex bead plate"
+1,88,895,895,27,"144-plex bead plate"
+1,90,901,901,27,"144-plex bead plate"
+1,96,913,913,27,"144-plex bead plate"
+1,97,915,915,27,"144-plex bead plate"
+1,98,920,920,27,"144-plex bead plate"
+1,99,950,950,27,"144-plex bead plate"
+1,100,952,952,27,"144-plex bead plate"
+1,102,969,969,27,"144-plex bead plate"
+1,104,984,984,27,"144-plex bead plate"
+1,105,989,989,27,"144-plex bead plate"
+1,108,1000,1000,27,"144-plex bead plate"
+1,112,1002,1002,27,"144-plex bead plate"
+1,114,1006,1006,27,"144-plex bead plate"
+1,120,1030,1030,27,"144-plex bead plate"
+1,128,962,962,27,"144-plex bead plate"
+1,129,1037,1037,27,"144-plex bead plate"
+1,130,975,975,27,"144-plex bead plate"
+1,131,1042,1042,27,"144-plex bead plate"
+1,132,1046,1046,27,"144-plex bead plate"
+1,133,1060,1060,27,"144-plex bead plate"
+1,134,1063,1063,27,"144-plex bead plate"
+1,135,1078,1078,27,"144-plex bead plate"
+1,136,1003,1003,27,"144-plex bead plate"
+1,137,1079,1079,27,"144-plex bead plate"
+1,138,1111,1111,27,"144-plex bead plate"
+1,140,1145,1145,27,"144-plex bead plate"
+1,141,1151,1151,27,"144-plex bead plate"
+1,144,1173,1173,27,"144-plex bead plate"
+1,145,1225,1225,27,"144-plex bead plate"
+1,146,1227,1227,27,"144-plex bead plate"
+1,147,1241,1241,27,"144-plex bead plate"
+1,148,1267,1267,27,"144-plex bead plate"
+1,150,1269,1269,27,"144-plex bead plate"
+1,152,1272,1272,27,"144-plex bead plate"
+1,153,1276,1276,27,"144-plex bead plate"
+1,156,1309,1309,27,"144-plex bead plate"
+1,160,1070,1070,27,"144-plex bead plate"
+1,161,1311,1311,27,"144-plex bead plate"
+1,162,1312,1312,27,"144-plex bead plate"
+1,164,1319,1319,27,"144-plex bead plate"
+1,165,1326,1326,27,"144-plex bead plate"
+1,168,1331,1331,27,"144-plex bead plate"
+1,170,1333,1333,27,"144-plex bead plate"
+1,176,1335,1335,27,"144-plex bead plate"
+1,177,1340,1340,27,"144-plex bead plate"
+1,180,1375,1375,27,"144-plex bead plate"
+1,192,1382,1382,27,"144-plex bead plate"
+1,193,1407,1407,27,"144-plex bead plate"
+1,194,1439,1439,27,"144-plex bead plate"
+1,256,1112,1112,27,"144-plex bead plate"
+1,257,1142,1142,27,"144-plex bead plate"
+1,260,1209,1209,27,"144-plex bead plate"
+1,272,1235,1235,27,"144-plex bead plate"
+1,320,1251,1251,27,"144-plex bead plate"
+1,512,1306,1306,27,"144-plex bead plate"
+1,514,1365,1365,27,"144-plex bead plate"
+1,520,1611,1611,27,"144-plex bead plate"
+1,544,1632,1632,27,"144-plex bead plate"
+1,640,1696,1696,27,"144-plex bead plate"
+1,1024,1716,1716,27,"144-plex bead plate"
+1,1025,1742,1742,27,"144-plex bead plate"
+1,1028,1878,1878,27,"144-plex bead plate"
+1,1040,1968,1968,27,"144-plex bead plate"
+1,1088,1992,1992,27,"144-plex bead plate"
+1,1280,2832,2832,27,"144-plex bead plate"
+1,2048,2911,2911,27,"144-plex bead plate"
+1,2050,2980,2980,27,"144-plex bead plate"
+1,2056,3008,3008,27,"144-plex bead plate"
+1,2080,3137,3137,27,"144-plex bead plate"
+1,2176,3433,3433,27,"144-plex bead plate"
+1,2560,3511,3511,27,"144-plex bead plate"
+1,4096,3802,3802,27,"144-plex bead plate"
+1,4097,3845,3845,27,"144-plex bead plate"
+1,4100,3864,3864,27,"144-plex bead plate"
+1,4112,3885,3885,27,"144-plex bead plate"
+1,4160,4254,4254,27,"144-plex bead plate"
+1,4352,4824,4824,27,"144-plex bead plate"

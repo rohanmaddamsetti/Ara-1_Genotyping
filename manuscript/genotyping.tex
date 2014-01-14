@@ -1,0 +1,174 @@
+%  LaTeX support: e-mail latex@mdpi.com
+%
+%  In case you need support, please attach any log files that you could
+%  have, and specify the details of your LaTeX setup (which operating
+%  system and LaTeX version / tools you are using).
+%==========================================================
+% LaTeX Class File and Rendering Mode (choose one)
+%----------------------------------------------------------
+% you will need to save "mdpi.cls" and "mdpi.bst" files
+% into the same folder as the this template file.
+%----------------------------------------------------------
+\documentclass[genes,article,submit,moreauthors,pdftex,12pt,a4paper]{mdpi} % for use with pdfLaTeX only
+%\documentclass[journal,article,submit,moreauthors,dvipdfm,12pt,a4paper]{mdpi} % if eps figure are used, use this line with LaTeX and dvi2pdf only
+%=================================================================
+% Class Options
+%-----------------------------------------------------------------
+%As first class option the journal should be set. Choose between:
+%administrativesciences, algorithms, atmosphere, cancers, challenges, diversity, energies, entropy, forests, futureinternet, games, genes, information, ijerph, ijms, jlpea, marinedrugs, materials, micromachines,
+%molbank,  molecules, nutrients, pharmaceuticals, pharmaceutics , polymers, religions, remotesensing, sensors, sustainability, symmetry, toxins, viruses, water
+%
+%-----------------------------------------------------------------
+% The default type of manuscript is article, but could be replaced
+% by using one of the class options:
+% article, review, communication, commentary, letter, bookreview,
+% correction, addendum, editorial.
+%-----------------------------------------------------------------
+% If there is only one author the class opting oneauthor should be
+% used. Otherwise use the class option moreauthors .
+%-----------------------------------------------------------------
+% The class option submit will be changed to accept by the Editorial
+% Office when the paper is accepted.
+% This will only make changes to the frontpage, the headings and
+% the copyright information
+% Journal Info and Pagination for Accepted Papers will also be
+% assigned by the Editorial
+%-----------------------------------------------------------------
+\setcounter{page}{1}
+\lastpage{x}
+\doinum{10.3390/------}
+\pubvolume{xx}
+\pubyear{2011}
+\history{Received: xx / Accepted: xx / Published: xx}
+
+%-----------------------------------------------------------------
+% The following line should be uncommented if the LaTeX file
+% is uploaded to arXiv.org
+%\pdfoutput=1
+%=================================================================
+%=================================================================
+% Add packages and commands to include here
+% The hyperref, caption, float and color packages are already included
+%-----------------------------------------------------------------
+%\usepackage{amssymb,amsmath}
+%\usepackage{graphicx}
+%\usepackage{subfigure,psfig}
+%-----------------------------------------------------------------
+% Full title of the paper (Capitalized)
+\Title{Fine-grained Evolutionary Dynamics in a Long-Term Evolution Experiment}
+
+% Authors (add full first names)
+\Author{Rohan Maddamsetti $^{1,\star}$, Austin Meyer $^{2}$, Richard E. Lenski
+ $^{1}$, and Jeffrey Barrick $^{2,\star}$}
+
+% Affiliations / Addresses, add [1] after \address if there is only one affiliation
+\address{%
+$^{1}$ Department of Zoology, Michigan State University,
+6176 Biomedical and Physical Sciences, East Lansing MI, USA\\
+$^{2}$ Department of Chemistry, University of Texas,
+ , Austin TX, USA}
+
+%Contact information of the corresponding author, add [2] after \corres if there are more than one corresponding author
+\corres[2]{rohan.maddamsetti@gmail.com, jbarrick@cm.utexas.edu}
+
+% Abstract
+%This should be one section and count less than 100 words.
+\abstract{For more than 20 years and 50,000 generations, we have evolved 12 
+replicate populations of Escherichia coli in the laboratory. This model system
+ has immense power to illuminate many basic questions in evolutionary biology.
+ In particular, we can examine the evolutionary dynamics of adaptation in real
+ time. From one well-studied line in this long-term evolution experiment, we
+ revived bacteria from whole-population samples frozen every 500 generations. 
+These samples cover 30,000 generations of evolution. Using Illumina VeraCode 
+technology, we genotyped each whole-population sample for 96 alleles of 
+evolutionary significance. We observe both the fixation of beneficial alleles 
+as well as significant bouts of clonal interference. To examine the diversity 
+of genotypes produced under clonal interference, we genotyped 90 clones 
+sampled at 7,500 and 10,000 generations. We compare these results to 
+population genetic simulations. }
+
+% Keywords: add 3 to 10 keywords
+\keyword{Experimental evolution; clonal interference; Escherichia coli}
+
+% the fields PACS and MSC may be left empty or commented out if not applicable
+%\PACS{}
+%\MSC{}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+
+Main text paragraph. Citing a journal paper \cite{ref-journal}. And now citing a book reference \cite{ref-book}.
+
+Main text paragraph.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Results and Discussion}
+
+Main text paragraph.
+
+
+Main text paragraph.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{This is a subsection heading}
+
+Main text paragraph.
+
+Main text paragraph.
+
+
+\subsubsection{This is a subsubsection heading}
+
+Main text paragraph.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Experimental Section}
+
+Main text paragraph.
+
+
+Main text paragraph.
+
+\subsection{This is a subsection heading}
+
+Main text paragraph.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Acknowledgements}
+
+Main text.
+
+%==========================================================
+%==========================================================
+% Back Matter (References and Notes)
+%----------------------------------------------------------
+% Style and layout of the references
+\bibliographystyle{mdpi}
+\makeatletter
+\renewcommand\@biblabel[1]{#1. }
+\makeatother
+%----------------------------------------------------------
+% Use the following option to include external BibTeX files:
+%\bibliography{template}
+%----------------------------------------------------------
+
+\begin{thebibliography}{1}
+%ref 1
+\bibitem{ref-journal}
+Lastname, F.; Author, T. The title of the cited article. {\em Journal Name} {\bf 2008}, {\em 10}, 142-149.
+
+
+%ref 2
+\bibitem{ref-book}
+Lastname, F.F.; Author, T. The title of the cited contribution. In {\em The Book Title}; Editor, F., Meditor, A., Eds.; Publishing House: City, 2007; pp. 32-58.
+
+\end{thebibliography}
+
+\
+\end{document}

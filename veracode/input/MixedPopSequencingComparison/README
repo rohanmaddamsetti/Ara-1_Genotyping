@@ -1,0 +1,18 @@
+README for Mixed Pop. Sequencing comparison.
+Rohan Maddamsetti, 9/26/2011.
+
+SNPs from the Cold Spring Harbor paper supplementary material were saved in an
+excel spreadsheet named MixedPopSequencingSNPs.xlsx. This file was then converted
+to *.csv format; the 'notes' column was removed from this file, and the headings
+were slightly changed so that the data would be more readable when analysed with R.
+A perl script called formatMixedPopSequencing.pl was used
+to add 'Ara-1-*' prefixes and '*-snp' suffixes to the gene name for each snp.
+This was saved as a UTF-8 encoded *.csv file called 
+EditedMixedPopSequencingSNPs.csv. This file was then compared by hand to 
+a description of the Veracode SNP assays called 
+Scored_orders_illumina_com_Lenski_Ara_1_091205.csv, so that the coordinates and the
+names of each SNP in both of these files matched up properly. A couple minor errors
+were found in each file, which I corrected. I then renamed
+EditedMixedPopSequencingSNPs.csv to FinalMixedPopSequencingSNPs.csv.
+This file is what R uses as input to do the comparison between mixed pop.
+sequencing and the Veracode genotyping results.

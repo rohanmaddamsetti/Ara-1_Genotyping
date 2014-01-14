@@ -1,0 +1,33 @@
+#!/usr/bin/python
+
+## bpopsim_null.py by Rohan Maddamsetti.
+## This script produces a *.csv file suitable for analysis with the R script
+## bpopsim_null_analysis.R.
+
+## Notes from an email from Jeff Barrick:
+## Jeff will send me files, for looking at how often a clade X or greater
+## mutations off the line of descent to the final dominant reaches Y% of
+## the population. The series of files is named 
+## "mutation_divergence_depth_frequency_X.tab. Notice that it is "X or greater"
+## and the frequency is for the biggest clade in existence that is that distance
+## (in mutations) from where it diverged from the line of descent to the final
+## dominant. Columns are time in transfers (75 = 500 generations, so this is
+## realistically coarse-grained.) Each row is a different simulation run.
+## I think you will want to take the maximum frequency in each row and use that
+## as the test statistic for that replicate. I [Jeff] guess the X=3 file is the
+## one of most interest?
+
+## One issue that might need to be dealt with is that if there is not a sweep
+## near the end of the simulation, the final dominant might not be the ultimate
+## winner (it may be on its way out). There seem to generally be higher numbers
+## at the tail end of the simulations for that reason, but I [Jeff] haven't
+## investigated it fully. Maybe you could look at the data to see if this is the
+## case. We could extend the simulations a lot at the end of see which would
+## have been the eventual winner and get rid of this artifact.
+
+def
+
+def main():
+	return
+
+main()

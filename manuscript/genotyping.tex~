@@ -1,0 +1,157 @@
+%  LaTeX support: e-mail latex@mdpi.com
+%
+%  In case you need support, please attach any log files that you could
+%  have, and specify the details of your LaTeX setup (which operating
+%  system and LaTeX version / tools you are using).
+%==========================================================
+% LaTeX Class File and Rendering Mode (choose one)
+%----------------------------------------------------------
+% you will need to save "mdpi.cls" and "mdpi.bst" files
+% into the same folder as the this template file.
+%----------------------------------------------------------
+\documentclass[journal,article,submit,moreauthors,pdftex,12pt,a4paper]{mdpi} % for use with pdfLaTeX only
+%\documentclass[journal,article,submit,moreauthors,dvipdfm,12pt,a4paper]{mdpi} % if eps figure are used, use this line with LaTeX and dvi2pdf only
+%=================================================================
+% Class Options
+%-----------------------------------------------------------------
+%As first class option the journal should be set. Choose between:
+%administrativesciences, algorithms, atmosphere, cancers, challenges, diversity, energies, entropy, forests, futureinternet, games, genes, information, ijerph, ijms, jlpea, marinedrugs, materials, micromachines,
+%molbank,  molecules, nutrients, pharmaceuticals, pharmaceutics , polymers, religions, remotesensing, sensors, sustainability, symmetry, toxins, viruses, water
+%
+%-----------------------------------------------------------------
+% The default type of manuscript is article, but could be replaced
+% by using one of the class options:
+% article, review, communication, commentary, letter, bookreview,
+% correction, addendum, editorial.
+%-----------------------------------------------------------------
+% If there is only one author the class opting oneauthor should be
+% used. Otherwise use the class option moreauthors .
+%-----------------------------------------------------------------
+% The class option submit will be changed to accept by the Editorial
+% Office when the paper is accepted.
+% This will only make changes to the frontpage, the headings and
+% the copyright information
+% Journal Info and Pagination for Accepted Papers will also be
+% assigned by the Editorial
+%-----------------------------------------------------------------
+\setcounter{page}{1}
+\lastpage{x}
+\doinum{10.3390/------}
+\pubvolume{xx}
+\pubyear{2011}
+\history{Received: xx / Accepted: xx / Published: xx}
+
+%-----------------------------------------------------------------
+% The following line should be uncommented if the LaTeX file
+% is uploaded to arXiv.org
+%\pdfoutput=1
+%=================================================================
+%=================================================================
+% Add packages and commands to include here
+% The hyperref, caption, float and color packages are already included
+%-----------------------------------------------------------------
+%\usepackage{amssymb,amsmath}
+%\usepackage{graphicx}
+%\usepackage{subfigure,psfig}
+%-----------------------------------------------------------------
+% Full title of the paper (Capitalized)
+\Title{Type of Article}
+
+% Authors (add full first names)
+\Author{Firstname Lastname $^{1,\star}$, Firstname Lastname $^{1}$ and Firstname Lastname $^{2}$}
+
+% Affiliations / Addresses, add [1] after \address if there is only one affiliation
+\address{%
+$^{1}$ Institute 1, University 1, Full Address, City, Country\\
+$^{2}$ Institute 2, University 2, Full Address, City, Country}
+
+%Contact information of the corresponding author, add [2] after \corres if there are more than one corresponding author
+\corres{E-Mail, Tel. and Fax number of the corresponding author.}
+
+% Abstract
+\abstract{This is the abstract section. The abstract should be one section and count less than 100 words.}
+
+% Keywords: add 3 to 10 keywords
+\keyword{keyword; keyword; keyword}
+
+% the fields PACS and MSC may be left empty or commented out if not applicable
+%\PACS{}
+%\MSC{}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+
+Main text paragraph. Citing a journal paper \cite{ref-journal}. And now citing a book reference \cite{ref-book}.
+
+Main text paragraph.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Results and Discussion}
+
+Main text paragraph.
+
+
+Main text paragraph.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{This is a subsection heading}
+
+Main text paragraph.
+
+Main text paragraph.
+
+
+\subsubsection{This is a subsubsection heading}
+
+Main text paragraph.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Experimental Section}
+
+Main text paragraph.
+
+
+Main text paragraph.
+
+\subsection{This is a subsection heading}
+
+Main text paragraph.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Acknowledgements}
+
+Main text.
+
+%==========================================================
+%==========================================================
+% Back Matter (References and Notes)
+%----------------------------------------------------------
+% Style and layout of the references
+\bibliographystyle{mdpi}
+\makeatletter
+\renewcommand\@biblabel[1]{#1. }
+\makeatother
+%----------------------------------------------------------
+% Use the following option to include external BibTeX files:
+%\bibliography{template}
+%----------------------------------------------------------
+
+\begin{thebibliography}{1}
+%ref 1
+\bibitem{ref-journal}
+Lastname, F.; Author, T. The title of the cited article. {\em Journal Name} {\bf 2008}, {\em 10}, 142-149.
+
+
+%ref 2
+\bibitem{ref-book}
+Lastname, F.F.; Author, T. The title of the cited contribution. In {\em The Book Title}; Editor, F., Meditor, A., Eds.; Publishing House: City, 2007; pp. 32-58.
+
+\end{thebibliography}
+
+\end{document}

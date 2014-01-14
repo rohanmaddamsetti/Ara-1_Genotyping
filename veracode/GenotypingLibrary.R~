@@ -1,0 +1,1222 @@
+##GenotypingLibrary.R by Rohan Maddamsetti
+##This is a library of functions used in my Genotyping scripts.
+
+library(ggplot2)
+
+#############FUNCTIONS FOR MIXED POPULATION DATA.
+
+##function to superimpose error bars on graph.
+##modified from http://raoul-rpages.blogspot.com/2005/09/error-bars-in-plots.html.
+add.error.bars <- function(x,y,upper,lower, my.length = 0.005, ...) {
+  arrows(x,upper,x,lower,angle = 90, code = 3, length = my.length, ...)
+}
+
+##This function takes a vector of bad samples, and removes them from the calibration standards.
+removeBadStandards <- function(the.bad.ones, the.calibration.standards){
+  not.bad.standard <- !the.calibration.standards$Sample.ID %in% the.bad.ones
+  return(subset(the.calibration.standards, not.bad.standard))
+}
+
+##This function takes a vector of bad samples, and removes them from the plate data.
+removeBadData <- function(the.bad.ones, the.plate.data){
+  not.bad.sample <- !the.plate.data$Sample.ID %in% the.bad.ones
+  return (subset(the.plate.data, not.bad.sample))
+}
+
+##This function returns the Sample.ID for a clone from the calibration standards,
+##taking a generation as input; e.g. gen == 0 for the ancestor, gen == 20000 for the 20K clone.
+getStandardSampleID <- function(the.calibration.standards, gen){
+  a.vector <- the.calibration.standards[the.calibration.standards$Gen==gen & the.calibration.standards$M.or.C=='C',]$Sample.ID
+  return(subset(a.vector, subset=sapply(a.vector, function (x) if (is.na(x)) FALSE else TRUE)))
+}
+
+##This function read in the list of bad SNP assays from the input file
+## "BadSNPAssays.txt," and it removes these SNPs from the plate.
+removeBadSNPAssays <- function(the.plate.data) {
+  ##read the list of bad snps.
+  bad.snps <- read.csv("input/BadSNPAssays.txt", header=F, col.names=c("badSNPs"), comment.char='#')
+  clean.plate.data <- subset(the.plate.data, !(as.character(the.plate.data$SNP.Name) %in% bad.snps$badSNPs))                  
+  return(clean.plate.data)
+}
+
+##This function removes the bad rearrangement data from a plate.
+removeRearrangements <- function(the.plate.data){
+  no.rngs.data <- subset(the.plate.data,
+                         sapply(the.plate.data$SNP.Name, function (x){
+                           if (length(grep("-rng",x))) FALSE else TRUE }))
+  return(no.rngs.data)
+}
+
+##This function removes data points with intensity based on a simple statistical cutoff.
+##The distribution of intensity values appears to be bimodal normal, around the assays that worked,
+##and the assays that didn't.
+##This calculates the distribution across some data.
+removeLowIntensityData <- function(the.data, p.val=0.05){
+  cutoff <- qnorm(p = p.val, mean=mean(the.data$R,na.rm=T), sd=sd(the.data$R,na.rm=T))
+  return(subset(the.data, sapply(the.data$R, function (x) x > cutoff)))
+}
+
+##On every subset of plate data per Sample ID, remove low intensity data.
+##Return the cleaned plate data.
+cleanSampleData <- function(the.plate.data,p.val.cutoff=0.05){
+  samples <- unique(the.plate.data$Sample.ID)
+  clean.data <- data.frame()
+  for (my.sample in samples){
+    clean.data <- rbind(clean.data,removeLowIntensityData(subset(the.plate.data, Sample.ID == my.sample)))
+  }
+  return(clean.data)
+}
+
+##This function adds a column to the dataframe denoting the well of the plate.
+##The purpose of this column is to help with merging replicate data with the same pattern of wells.
+##In this case, I need this to average mixed plate data.
+##This can also be used on calibration standards.
+addWellColumn <- function(the.data){
+  ##Apparently there's no easy way in R to take a substring from the end.
+  my.data <- the.data
+  my.data$Well <- getWellColumn(the.data)
+  return(my.data)
+}
+
+##This function returns a column denoting the well of the plate.
+##The length is the same as the length of the plate data columns.
+getWellColumn <- function(the.data){
+  well.column <- sapply(the.data$Sample.ID, function (x) {
+    well <- regexpr("R\\d{3}_C\\d{3}",x)
+    substr(x, well[1], well[1] + attr(well, "match.length")) } )
+  return(well.column)
+}
+
+##This function is used to match the average's Sample.ID with its calibration standards properly.
+getWellFromSampleID <- function(a.sample.id){
+  well <- regexpr("R\\d{3}_C\\d{3}",a.sample.id)
+  return(substr(a.sample.id, well[1], well[1] + attr(well, "match.length")))
+}
+
+##This function averages all relevant plate measurements: Theta, B.Allele.Freq, and R intensity.
+averageRelevantMixedPlateData <- function(all.the.plate.data){
+  ##First, add a Well column so data can be merged properly.
+  all.plate.data <- addWellColumn(all.the.plate.data)
+  ##Now, average data with the same well entry and SNP Name.
+  mean.plate.data <- aggregate(all.plate.data[,c("Theta", "R", "B.Allele.Freq", "measured.theta", "measured.b.allele.freq", "residual.theta", "residual.b.allele.freq", "predicted.theta.fit", "predicted.b.allele.freq.fit", "actual")],
+                                   by=list(all.plate.data$SNP.Name, all.plate.data$Well),
+                                   FUN= function (x) mean(x,na.rm=TRUE))
+  ##Rename the columns.
+  colnames(mean.plate.data) <- c("SNP.Name", "Sample.ID", "Theta", "R", "B.Allele.Freq", "measured.theta", "measured.b.allele.freq", "residual.theta", "residual.b.allele.freq", "predicted.theta.fit", "predicted.b.allele.freq.fit", "actual")
+
+  ##predicted.theta.lwr, predicted.theta.upr, predicted.b.allele.freq.lwr, predicted.b.allele.freq.upr
+  ##Now, find the lower bound for the confidence interval of the mean of the above data.
+  averaged.plate.data.lwr <- aggregate(all.plate.data[,c("Theta", "R", "B.Allele.Freq", "measured.theta", "measured.b.allele.freq", "predicted.theta.fit", "predicted.b.allele.freq.fit")],
+                                   by=list(all.plate.data$SNP.Name, all.plate.data$Well),
+                                   FUN= function (x) mean(x,na.rm=TRUE) - qt(p=0.975,df=length(x)-1)*sd(x,na.rm=TRUE)/sqrt(length(x)))
+  ##Rename the columns.
+  colnames(averaged.plate.data.lwr) <- c("SNP.Name", "Sample.ID", "Theta.lwr", "R.lwr", "B.Allele.Freq.lwr", "measured.theta.lwr", "measured.b.allele.freq.lwr", "predicted.theta.lwr", "predicted.b.allele.freq.lwr")
+
+  ##Now do the upper bound.
+  averaged.plate.data.upr <- aggregate(all.plate.data[,c("Theta", "R", "B.Allele.Freq", "measured.theta", "measured.b.allele.freq", "predicted.theta.fit", "predicted.b.allele.freq.fit")],
+                                   by=list(all.plate.data$SNP.Name, all.plate.data$Well),
+                                   FUN= function (x) mean(x,na.rm=TRUE) + qt(p=0.975,df=length(x)-1)*sd(x,na.rm=TRUE)/sqrt(length(x)))
+  ##Rename the columns.
+  colnames(averaged.plate.data.upr) <- c("SNP.Name", "Sample.ID", "Theta.upr", "R.upr", "B.Allele.Freq.upr", "measured.theta.upr", "measured.b.allele.freq.upr", "predicted.theta.upr", "predicted.b.allele.freq.upr")
+
+  ##Now merge these data frames together.
+  averaged.plate.confint <- merge(x=averaged.plate.data.lwr, y=averaged.plate.data.upr, all=TRUE)
+  averaged.plate.data <- merge(x=mean.plate.data, y=averaged.plate.confint, all=TRUE)
+  
+  ##Add back the data columns lost in the aggregate procedure.
+  ##columns to add: M.or.C, order, color, generation, calibrated.
+  M.or.C.hash <- sapply(levels(factor(all.plate.data$Well)), function (x) unique(subset(all.plate.data$M.or.C, all.plate.data$Well == x)))
+  averaged.plate.data$M.or.C <- sapply(averaged.plate.data$Sample.ID, function (x) M.or.C.hash[[x]]) 
+  order.hash <- sapply(levels(factor(all.plate.data$Well)), function (x) unique(subset(all.plate.data$order, all.plate.data$Well == x)))
+  averaged.plate.data$order <- sapply(averaged.plate.data$Sample.ID, function (x) order.hash[[x]]) 
+  color.hash <- sapply(levels(factor(all.plate.data$Well)), function (x) unique(subset(all.plate.data$color, all.plate.data$Well == x)))
+  averaged.plate.data$color <- sapply(averaged.plate.data$Sample.ID, function (x) color.hash[[x]]) 
+  generation.hash <- sapply(levels(factor(all.plate.data$Well)), function (x) unique(subset(all.plate.data$generation, all.plate.data$Well == x)))
+  averaged.plate.data$generation <- sapply(averaged.plate.data$Sample.ID, function (x) generation.hash[[x]])
+
+  ##For the calibrated column, use SNP.Name, instead of the Sample ID.
+  ##If the SNP is calibrated in one dataset, but not in another, the SNP is called as uncalibrated.
+  calibrated.hash <- sapply(levels(all.plate.data$SNP.Name), function (x) isTRUE(unique(subset(all.plate.data$calibrated, all.plate.data$SNP.Name == x))))
+  averaged.plate.data$calibrated <- sapply(averaged.plate.data$SNP.Name, function (x) (calibrated.hash[[x]]))  
+  return(averaged.plate.data)
+}
+
+##This function weights the given allele frequencies in the mixed clone data
+##in the calibration standards by the ratio of 8593A DNA to 607 DNA.
+##This will be calculated from flow cytometry data. By default, there is no weight.
+scaleMixedClones <- function(the.calibration.standards, weight=1){
+  clones <- subset(the.calibration.standards, M.or.C=='C')
+  mixed.clones <- subset(the.calibration.standards, M.or.C=="MC")
+  mixed <- subset(the.calibration.standards, M.or.C=="M")
+  metadata <- c('Well', 'Sample.ID', 'Strain', 'Project', 'Pop', 'Gen', 'M.or.C', 'color', 'order')
+  data <- !names(mixed.clones) %in% metadata
+  ##divide up the dataframe into the values to be weighted, and the metadata (which can't be weighted).
+  allele.metadata <- subset(mixed.clones,select=!data)
+  allele.data <- subset(mixed.clones, select=data)
+  weighted.allele.data <- (allele.data*weight)/(allele.data*weight + (1-allele.data))
+  ##put them back together.
+  weighted.mixed.clones <- cbind(allele.metadata,weighted.allele.data)
+  ##Now merge back with the rest of the calibration standards.
+  weighted.calibration.standards <- rbind(clones, weighted.mixed.clones, mixed)
+  return(weighted.calibration.standards)
+}
+
+##This function calibrates, reverses, and fits SNPs.
+##It produces a super dataframe.
+calibrateSNPs <- function(the.plate.data,the.calibration.standards) {
+  ##sort standards by well.
+  sorted.calibration.standards <- the.calibration.standards[order(the.calibration.standards$Sample.ID),]
+
+  ##Add sample type data from calibration standards to the plate data.
+  samples <- unique(the.plate.data$Sample.ID)
+  sample.to.MorC.hash <- sapply(levels(samples), function (x) subset(the.calibration.standards$M.or.C, the.calibration.standards$Sample.ID == x))
+  the.plate.data$M.or.C <- sapply(the.plate.data$Sample.ID, function (x) sample.to.MorC.hash[[x]])
+  
+  snp.names <- unique(the.plate.data$SNP.Name)
+
+  calibrated.plate.data <- data.frame()
+  ##Loop over every SNP.
+  for (snp in snp.names){
+    ##skip rearrangements.
+    if(length(grep("-rng", snp))) next
+    ##Example: test.snp.data <- subset(the.plate.data, SNP.Name == "Ara-1-topA-snp")
+    illumina.snp.data <- subset(the.plate.data,SNP.Name == snp)
+    measured.theta <- illumina.snp.data$Theta
+    measured.b.allele.freq <- illumina.snp.data$B.Allele.Freq
+    dot.snp.name <- gsub("-",".",snp)
+    snp.standards <- sorted.calibration.standards[[dot.snp.name]]
+    ancestor.ID <- getStandardSampleID(the.calibration.standards,0)
+    twenty.k.clone.ID <-getStandardSampleID(the.calibration.standards,20000)
+    forty.k.clone.ID <- getStandardSampleID(the.calibration.standards,40000)
+    ancestor.theta <- subset(illumina.snp.data,Sample.ID==ancestor.ID,Theta)
+    twenty.k.theta <- subset(illumina.snp.data,Sample.ID==twenty.k.clone.ID,Theta)
+    forty.k.theta <- subset(illumina.snp.data,Sample.ID==forty.k.clone.ID,Theta)
+    calibrators <- subset(the.calibration.standards,M.or.C=="MC")[[dot.snp.name]]
+    rev <- F #default: don't reverse.
+    do.calibration <- T #default: do calibration.
+    
+    if (length(grep(1,snp.standards))) {
+      zeros <- 0
+      zero.sum <- 0
+      ones <- 0
+      one.sum <- 0
+      
+      for (i in 1:length(snp.standards)) {
+        if (is.na(snp.standards[i]) || is.na(measured.theta[i])) {
+          next
+        }
+        else if (snp.standards[i] == 1) {
+          ones <- ones + 1
+          one.sum <- one.sum + measured.theta[i]
+        }
+        else if (snp.standards[i] == 0) {
+          zeros <- zeros + 1
+          zero.sum <- zero.sum + measured.theta[i]
+        }
+      }
+      zero.avg <- zero.sum/zeros
+      one.avg <- one.sum/ones
+      if (zero.avg > one.avg) {
+        rev <- T
+      }
+    } else {
+      print("Alert!")
+      print(snp)
+      print("The standards for this SNP are insufficient.")
+      print(snp.standards)
+      do.calibration <- F
+      ##Reverse if measured.theta is ~1 in the ancestor.
+      try({if(ancestor.theta > 0.9) rev <- T},silent=T)
+    }
+    if(rev) {
+      measured.theta <- sapply(measured.theta,function(x) 1-x)
+      measured.b.allele.freq <- sapply(measured.b.allele.freq,function(x) 1-x)
+      if (is.na(twenty.k.theta)) twenty.k.theta <- 1
+      if (is.na(forty.k.theta)) forty.k.theta <- 1
+      twenty.k.theta <- 1 - twenty.k.theta
+      forty.k.theta <- 1 - forty.k.theta
+    }
+
+    ## Allele freq. must be close to 1 in 20K clone or 40K clone.
+    if (length(twenty.k.theta[,1]) == 0 || is.na(twenty.k.theta)) twenty.k.theta <- 0 
+    if (length(forty.k.theta[,1]) == 0 || is.na(forty.k.theta)) forty.k.theta <- 0
+    if(twenty.k.theta < 0.9 || forty.k.theta < 0.9){ ##should be close to one.
+      do.calibration <- F
+    }
+    
+    ##To fit with Jeff's code, add an 'actual' column to the sliced data frame.
+    ##The following black magic in English is this:
+    ##select rows of sorted.calibration.standards where Sample.ID == that for illumina.snp.data,
+    ##then take the column for the particular snp.
+    the.actual <- subset(sorted.calibration.standards,sapply(sorted.calibration.standards$Sample.ID, function (id) { if (id %in% illumina.snp.data$Sample.ID) TRUE else FALSE} ))[[dot.snp.name]]
+    illumina.snp.data$actual <- the.actual
+    ##Add measured to the sliced data frame.
+    illumina.snp.data$measured.theta <- measured.theta
+    illumina.snp.data$measured.b.allele.freq <- measured.b.allele.freq
+    illumina.snp.data$order <- subset(sorted.calibration.standards,sapply(sorted.calibration.standards$Sample.ID, function (id) { if (id %in% illumina.snp.data$Sample.ID) TRUE else FALSE} ))$order
+    ##assign the color column for illumina.snp.data.
+    illumina.snp.data$color <- subset(sorted.calibration.standards,sapply(sorted.calibration.standards$Sample.ID, function (id) { if (id %in% illumina.snp.data$Sample.ID) TRUE else FALSE} ))$color
+    illumina.snp.data$generation <- subset(sorted.calibration.standards,sapply(sorted.calibration.standards$Sample.ID, function (id) { if (id %in% illumina.snp.data$Sample.ID) TRUE else FALSE} ))$Gen
+    illumina.snp.data$residual.theta <- illumina.snp.data$actual - illumina.snp.data$measured.theta
+    illumina.snp.data$residual.b.allele.freq <- illumina.snp.data$actual - illumina.snp.data$measured.b.allele.freq
+#######  NOTE: I get warnings of this type: Perhaps due to measured NaN values in the data? 
+#######In predict.lm(fit, illumina.snp.data, level = 0.95, interval = "confidence") :
+#######prediction from a rank-deficient fit may be misleading
+
+    if(do.calibration){
+      fit.theta <- lm(residual.theta~0+I(measured.theta-measured.theta^2)+I(measured.theta-measured.theta^4)+I(measured.theta-measured.theta^6)+I(measured.theta-measured.theta^8)+I(measured.theta-measured.theta^10),illumina.snp.data)
+      fit.b.allele.freq <- lm(residual.b.allele.freq~0+I(measured.b.allele.freq - measured.b.allele.freq^2)+I(measured.b.allele.freq - measured.b.allele.freq^4)+I(measured.b.allele.freq-measured.b.allele.freq^6)+I(measured.b.allele.freq-measured.b.allele.freq^8)+I(measured.b.allele.freq-measured.b.allele.freq^10),illumina.snp.data)
+      predicted.theta  <- predict(fit.theta,illumina.snp.data, level=0.95, interval='prediction') + illumina.snp.data$measured.theta
+      illumina.snp.data$predicted.theta.fit <- predicted.theta[,1]
+      illumina.snp.data$predicted.theta.lwr <- predicted.theta[,2]
+      illumina.snp.data$predicted.theta.upr <- predicted.theta[,3]
+      predicted.b.allele.freq  <- predict(fit.b.allele.freq,illumina.snp.data, level=0.95, interval='prediction') + illumina.snp.data$measured.b.allele.freq
+      illumina.snp.data$predicted.b.allele.freq.fit <- predicted.b.allele.freq[,1]
+      illumina.snp.data$predicted.b.allele.freq.lwr <- predicted.b.allele.freq[,2]
+      illumina.snp.data$predicted.b.allele.freq.upr <- predicted.b.allele.freq[,3]
+      sorted.illumina.snp.data <- illumina.snp.data[order(illumina.snp.data$order),]
+    }
+    else{
+      illumina.snp.data$predicted.theta.fit <- rep(NA,length(illumina.snp.data[,1]))
+      illumina.snp.data$predicted.theta.lwr <- rep(NA,length(illumina.snp.data[,1]))
+      illumina.snp.data$predicted.theta.upr <- rep(NA,length(illumina.snp.data[,1]))
+      illumina.snp.data$predicted.b.allele.freq.fit <- rep(NA,length(illumina.snp.data[,1]))
+      illumina.snp.data$predicted.b.allele.freq.lwr <- rep(NA,length(illumina.snp.data[,1]))
+      illumina.snp.data$predicted.b.allele.freq.upr <- rep(NA,length(illumina.snp.data[,1]))
+      sorted.illumina.snp.data <- illumina.snp.data[order(illumina.snp.data$order),]
+    }
+
+    ##Say whether this snp has been calibrated or not in the data frame.
+    ##This is useful for function that makes 'SNP_Graphs.pdf.'
+    illumina.snp.data$calibrated <- do.calibration
+    ##Add the now calibrated snp data to the whole data frame.
+    calibrated.plate.data <- rbind(calibrated.plate.data,illumina.snp.data)
+  } ##END OF SNP LOOP.
+  return(calibrated.plate.data)
+}
+
+##Refactored code that makes the 'SNP_Graphs.pdf' file.
+#For example: output.file = "SNP_Graphs.pdf"
+graphAllSNPs <- function(the.calibrated.data, output.file){
+  pdf(output.file, family="Helvetica")
+  snp.names <- unique(the.calibrated.data$SNP.Name)
+  for (snp in snp.names) {    
+    calibrated.snp.data <- subset(the.calibrated.data, SNP.Name == snp)
+    is.calibrated = unique(calibrated.snp.data$calibrated)
+    sorted.calibrated.snp.data <- calibrated.snp.data[order(calibrated.snp.data$order),]
+    ##Make graphs for the SNP.
+    if (is.calibrated) {
+      title1 <- paste(snp, ":\n ", "Allele Frequency Response Curve - Raw Theta Data")
+      plot(calibrated.snp.data$actual, calibrated.snp.data$measured.theta,main=title1,
+           xlab="known frequency", ylab="predicted frequency", ylim=c(0,1))
+      lines(cbind(0,1), cbind(0,1))
+      
+      title2 <- paste(snp, ":\n", "Allele Frequency Response Curve - Calibrated Theta")
+      plot(calibrated.snp.data$actual, calibrated.snp.data$predicted.theta.fit,
+           main=title2, xlab="known frequency", ylab="predicted frequency",ylim=c(0,1))
+      lines(cbind(0,1), cbind(0,1))
+      
+      title3 <- paste(snp, ":\n ", "Allele Frequency Response Curve - Raw B Allele Frequency")
+      plot(calibrated.snp.data$actual,calibrated.snp.data$measured.b.allele.freq,
+           main=title3, xlab="known frequency", ylab="predicted frequency",ylim=c(0,1))
+      lines(cbind(0,1), cbind(0,1))
+      
+      title4 <- paste(snp, ":\n", "Allele Frequency Response Curve - Calibrated B Allele Frequency")
+      plot(calibrated.snp.data$actual, calibrated.snp.data$predicted.b.allele.freq.fit,
+           main=title4, xlab="known frequency", ylab="predicted frequency",ylim=c(0,1))
+      lines(cbind(0,1), cbind(0,1))
+    }
+    
+    mycolors <- cbind("red", "blue", "orange", "green", "purple")
+    mycolorlist <- c()
+    
+    for (i in 1:length(calibrated.snp.data$measured.theta)){
+      mycolorlist <- rbind(mycolorlist, mycolors[as.numeric(sorted.calibrated.snp.data$color[i])+1])
+      sorted.calibrated.snp.data$generation[i] <- as.numeric(sorted.calibrated.snp.data$generation[i])
+    }
+    
+    sorted.calibrated.snp.data$graph.colors <- mycolorlist
+    ##subset and sort by generation.
+    mixed.pop.calibrated.snp.data <- sorted.calibrated.snp.data[c(1,26:length(calibrated.snp.data[,1])),]
+    
+    if (is.calibrated){
+      title5 <- paste(snp,":\n","Predicted Theta - All Samples")
+      x.abscis <- barplot(sorted.calibrated.snp.data$predicted.theta.fit,
+                          col=sorted.calibrated.snp.data$graph.colors, main=title5, xlab="Generation",
+                          ylab="Predicted Allele Frequency", ylim=c(0,1))
+      add.error.bars(x.abscis, sorted.calibrated.snp.data$predicted.theta.fit,
+                     sorted.calibrated.snp.data$predicted.theta.upr,
+                     sorted.calibrated.snp.data$predicted.theta.lwr, col="orange")
+      
+      title6 <- paste(snp,":\n","Predicted Theta - Mixed Populations")
+      plot(mixed.pop.calibrated.snp.data$generation, mixed.pop.calibrated.snp.data$predicted.theta.fit,
+           main=title6, xlab="Generation", ylab="Predicted Allele Frequency",ylim=c(0,1))
+      lines(mixed.pop.calibrated.snp.data$generation, mixed.pop.calibrated.snp.data$predicted.theta.fit)
+      add.error.bars(mixed.pop.calibrated.snp.data$generation,
+                     mixed.pop.calibrated.snp.data$predicted.theta.fit,
+                     mixed.pop.calibrated.snp.data$predicted.theta.upr,
+                     mixed.pop.calibrated.snp.data$predicted.theta.lwr, col="orange")
+      
+      title7 <- paste(snp,":\n","Predicted B Allele Frequencies - All Samples")
+      x.abscis2 <- barplot(sorted.calibrated.snp.data$predicted.b.allele.freq.fit, col=sorted.calibrated.snp.data$graph.colors,
+                           main=title7, xlab="Generation", ylab="Predicted Allele Frequency", ylim=c(0,1))
+      add.error.bars(x.abscis2, sorted.calibrated.snp.data$predicted.b.allele.freq.fit,
+                     sorted.calibrated.snp.data$predicted.b.allele.freq.upr,
+                     sorted.calibrated.snp.data$predicted.b.allele.freq.lwr, col="orange")
+      
+      title8 <- paste(snp,":\n","Predicted B Allele Frequencies - Mixed Populations")
+      plot(mixed.pop.calibrated.snp.data$generation, mixed.pop.calibrated.snp.data$predicted.b.allele.freq.fit,
+           main=title8, xlab="Generation", ylab="Predicted B Allele Frequency",ylim=c(0,1))
+      lines(mixed.pop.calibrated.snp.data$generation, mixed.pop.calibrated.snp.data$predicted.b.allele.freq.fit)
+      add.error.bars(mixed.pop.calibrated.snp.data$generation,
+                     mixed.pop.calibrated.snp.data$predicted.b.allele.freq.fit,
+                     mixed.pop.calibrated.snp.data$predicted.b.allele.freq.upr,
+                     mixed.pop.calibrated.snp.data$predicted.b.allele.freq.lwr, col="orange")
+    }
+    
+    title9 <- paste(snp,":\n","Measured Theta - All Samples")
+    x.abscis3 <- barplot(sorted.calibrated.snp.data$measured.theta, col=sorted.calibrated.snp.data$graph.colors,
+            main=title9, xlab="Generation", ylab="Measured Theta", ylim=c(0,1))
+    if(length(grep("R.upr", names(sorted.calibrated.snp.data)))) { #If this function is called on averaged data.
+    add.error.bars(x.abscis3, sorted.calibrated.snp.data$measured.theta,
+                   sorted.calibrated.snp.data$measured.theta.upr,
+                   sorted.calibrated.snp.data$measured.theta.lwr, col="orange")
+  }
+    
+    title10 <- paste(snp,":\n","Measured Theta - Mixed Populations")
+    plot(mixed.pop.calibrated.snp.data$generation, mixed.pop.calibrated.snp.data$measured.theta,
+         main=title10, xlab="Generation", ylab="Measured Theta", ylim=c(0,1))
+    lines(mixed.pop.calibrated.snp.data$generation, mixed.pop.calibrated.snp.data$measured.theta)
+    if(length(grep("R.upr", names(mixed.pop.calibrated.snp.data)))) { #If this function is called on averaged data.
+    add.error.bars(mixed.pop.calibrated.snp.data$generation,
+                   mixed.pop.calibrated.snp.data$measured.theta,
+                   mixed.pop.calibrated.snp.data$measured.theta.upr,
+                   mixed.pop.calibrated.snp.data$measured.theta.lwr, col="orange")
+  }
+    title11 <- paste(snp,":\n","Measured B Allele Frequencies - All Samples")
+    x.abscis4 <- barplot(sorted.calibrated.snp.data$measured.b.allele.freq, col=sorted.calibrated.snp.data$graph.colors,
+            main=title11, xlab="Generation", ylab="Measured B Allele Frequency", ylim=c(0,1))
+    if(length(grep("R.upr", names(sorted.calibrated.snp.data)))) { #If this function is called on averaged data.
+      add.error.bars(x.abscis4, sorted.calibrated.snp.data$measured.b.allele.freq,
+                     sorted.calibrated.snp.data$measured.b.allele.freq.upr,
+                     sorted.calibrated.snp.data$measured.b.allele.freq.lwr, col="orange")
+    }
+    
+    title12 <- paste(snp,":\n","Measured B Allele Frequencies - Mixed Populations")
+    plot(mixed.pop.calibrated.snp.data$generation, mixed.pop.calibrated.snp.data$measured.b.allele.freq,
+         main=title12, xlab="Generation", ylab="Measured B Allele Frequency",ylim=c(0,1))
+    lines(mixed.pop.calibrated.snp.data$generation, mixed.pop.calibrated.snp.data$measured.b.allele.freq)
+    if(length(grep("R.upr", names(mixed.pop.calibrated.snp.data)))) { ##If this function is called on averaged data.
+      add.error.bars(mixed.pop.calibrated.snp.data$generation,
+                     mixed.pop.calibrated.snp.data$measured.b.allele.freq,
+                     mixed.pop.calibrated.snp.data$measured.b.allele.freq.upr,
+                     mixed.pop.calibrated.snp.data$measured.b.allele.freq.lwr, col="orange")
+    }
+    
+  }##End of SNP loop.
+  dev.off()
+}
+
+##########################################
+##FUNCTIONS FOR CLONE DATA
+##########################################
+
+##This function gets ancestor data from mixed population data.
+getAncestorData <- function(the.mixed.plate.data,the.calibration.standards,use.theta=TRUE){
+  ##This next line will hold only for the calibration standards that me and Jeff made!
+  the.ancestor.ID <- the.calibration.standards[1,]$Sample.ID
+  the.ancestor.data <- subset(the.mixed.plate.data,the.mixed.plate.data$Sample.ID==the.ancestor.ID)
+  if (use.theta){
+   return(subset(the.ancestor.data, select=c(SNP.Name,Theta)))
+  }
+  else{
+   return(subset(the.ancestor.data, select=c(SNP.Name,B.Allele.Freq)))
+  }
+}
+
+##This function returns a logical vector for non-rearranged SNPs; TRUE if should be reversed,
+##FALSE otherwise.
+reverseSNP <- function(all.the.ancestors){
+  averaged.ancestor.data <- aggregate(all.the.ancestors[,2],by=list(all.the.ancestors$SNP.Name),FUN= function (x) mean(x,na.rm=TRUE))  
+  ##remove rearrangements.
+  no.rngs.averaged.ancestor.data <- subset(averaged.ancestor.data,
+                                           sapply(averaged.ancestor.data[,1],
+                                                  function (x)
+                                                  {if(length(grep("-rng",x))) FALSE else TRUE}))
+
+  reverse.these.snps <- no.rngs.averaged.ancestor.data
+  reverse.these.snps[,2] <- sapply(reverse.these.snps[,2],
+                               function (x) {if (x > 0.5) TRUE else FALSE}) 
+  reverse.these.snps <- data.frame("SNP.Name"=reverse.these.snps[,1],"Reverse"=reverse.these.snps[,2])
+  return(reverse.these.snps)
+}
+
+
+# This function makes a table data structure where the rows are clones,
+# and the columns are non-rearranged SNPs. This can work on either theta or b allele freq data.
+# The default is that it works with B Allele Frequency data.
+makeGenotypeTable <- function(the.plate.data,the.snps.to.reverse, control.wells, use.theta=FALSE){
+  columns <- list()
+  snp.names <- unique(the.plate.data$SNP.Name)
+  ##remove rearrangements.
+  row.names <- snp.names[sapply(snp.names, function (x) {if(length(grep("-rng",x))) FALSE else TRUE})]
+  for (snp in row.names){
+    snp.data <- subset(the.plate.data,SNP.Name == snp)
+    col.data <- NULL
+    if (use.theta){
+      col.data <-  snp.data$Theta
+    }
+    else{
+      col.data <- snp.data$B.Allele.Freq
+    }
+    ##Now reverse the raw values that need reversing.
+    reverse.boolean <- snps.to.reverse[snps.to.reverse$SNP.Name==snp,]$Reverse
+    if (reverse.boolean){
+      col.data <- sapply(col.data, function (x) if (is.na(x)) NA else 1-x)
+    }
+    ##Now, convert the raw values into either 1s or zeros.
+    col.data <- sapply(col.data, function (x) if (is.na(x)) NA else if (x > 0.5) 1 else 0)
+    columns[[snp]] <- col.data
+  }
+  the.genotype.table <- data.frame(columns)
+  ##Now, add the Well to the genotype table.
+  the.genotype.table$Well <- unique(getWellColumn(the.plate.data))
+  ##remove control samples from the genotype.table.
+  final.genotype.table <- the.genotype.table[!(the.genotype.table$Well %in% control.wells),]
+  return(final.genotype.table)
+}
+
+##This function takes the genotype table and calculates genotype frequencies.
+countGenotypeFrequencies <- function(the.genotype.table){
+  ##For now, throw out genotypes with missing values (11 clones have NA values).
+  to.filter <- apply(the.genotype.table, MARGIN=1,
+                      FUN=function (x) if (length(Filter(function (y) is.na(y),x))) FALSE else TRUE)
+  filtered.table <- subset(the.genotype.table, subset=to.filter)
+  ##drop the well column since this will mess up the coding.
+  filtered.table$Well <- NULL
+  ##Remove duplicate values.
+  unique.table <- unique(filtered.table)
+  ##Count the number of each kind of row (genotype) for each row in unique.table.
+  coded.filtered <- apply(filtered.table, MARGIN = 1, FUN = function (x) paste(x, collapse=""))
+  coded.unique <- apply(unique.table, MARGIN = 1, FUN = function (x) paste(x, collapse=""))
+  genotype.frequencies <- sapply(coded.unique,
+                                 function (x) length(grep(x,coded.filtered))/length(coded.filtered))
+  return(genotype.frequencies)
+}
+
+##This function prints a table of string representations of each genotype.
+genotypeStringRepr <- function(the.genotype.table,separator="/"){
+  the.string.table <- the.genotype.table
+  my.snp.names <- names(the.string.table)
+  #over the columns, replace '1' elts with the snp name, replace all others with the empty string.
+  for (snp in my.snp.names){
+    the.string.table[[snp]] <- sapply(the.string.table[[snp]],
+                          function(elt) if (is.na(elt)) "NA" else if (elt == 1) snp else "")
+  }
+  #concatenate the rows into the string representations.
+  string.vector <- apply(the.string.table,MARGIN=1,FUN=function (row) paste(row,collapse=separator))
+  #If > 1 copies of a separator are in a string, replace this with a single copy.
+  regex <- paste(separator,"{2,}",sep="")
+  string.repr <- unlist(lapply(string.vector, function (my.str) gsub(regex,separator,my.str,perl=TRUE)))
+  output.table <- data.frame(cbind(Clone=c(1:length(string.repr)), Genotype=string.repr))
+  return(output.table)
+}
+
+##This function adds a "DNA String" representation of each genotype as a column to the genotype table.
+##This is for phylogeny building, either with PHYLIP or with an R phylogenetics package.
+genotypeDNAString <- function(the.genotype.table){
+  no.well.genotype.table <- subset(the.genotype.table,select = names(the.genotype.table) != "Well")
+  strings <-  apply(no.well.genotype.table, MARGIN = 1, FUN = function (x) paste(x,collapse=""))
+  DNA.strings <- gsub("1", "A", gsub("0", "T", gsub("NA", "N", strings)))
+  return(DNA.strings)
+}
+
+##This function takes the genotype table and calculates allele frequencies.
+countAlleleFrequencies <- function(the.genotype.table){
+  ##Sum each column and divide by the number of rows. Ignore NA values.
+  ##Be sure to remove the 'Well' name from my.snp.names.
+  my.snp.names <- subset(names(the.genotype.table),sapply(names(the.genotype.table),
+                                                          function (x) ifelse(x == "Well", FALSE, TRUE)))
+  N = length(my.snp.names)
+  the.allele.freq.table <- data.frame(SNP.Name=rep(NA,N),Count=rep(NA,N),Total=rep(NA,N),Frequency=rep(NA,N), confint.lwr=rep(NA,N), confint.upr=rep(NA,N))
+  
+  for (i in 1:length(my.snp.names)){
+    snp <- my.snp.names[i]
+    counts <- sum(the.genotype.table[[snp]],na.rm=TRUE)
+    total <- length(the.genotype.table[[snp]]) - sum(is.na(the.genotype.table[[snp]]))
+    allele.frequency <- counts/total
+    result <- binom.test(x=counts,n=total)
+    lwr <- result$conf.int[1]
+    upr <- result$conf.int[2]
+    the.allele.freq.table[i,] <- c(snp,counts,total,allele.frequency,lwr,upr)
+  }
+  return(the.allele.freq.table)
+}
+
+##This function returns the subset of SNPs that fix by default,
+##and returns the subset of SNPs that don't fix  when the 'get.fixations'
+##parameter is set to false.
+##These data must already have been calibrated, etc.
+partitionSNPs <- function(the.final.data, use.theta=FALSE, get.fixations=TRUE) {
+  ##fixations should have theta close to 1 in generation 30000.
+  thirtyK.data <- subset(the.final.data, generation==30000)
+  if (get.fixations) {
+    if (use.theta) {
+      return(unique(subset(thirtyK.data$SNP.Name,                                    
+                           sapply(thirtyK.data$measured.theta, function (x) if (x > 0.9) TRUE else FALSE))))
+    } else {
+      return(unique(subset(thirtyK.data$SNP.Name,                                    
+                           sapply(thirtyK.data$measured.b.allele.freq, function (x) if (x > 0.9) TRUE else FALSE))))
+    }
+  } else {
+    if (use.theta) {
+      return(unique(subset(thirtyK.data$SNP.Name,                                    
+                           sapply(thirtyK.data$measured.theta, function (x) if (x > 0.9) FALSE else TRUE))))   
+    } else {
+      return(unique(subset(thirtyK.data$SNP.Name,                                    
+                           sapply(thirtyK.data$measured.b.allele.freq, function (x) if (x > 0.9) FALSE else TRUE))))
+    }
+  }
+}
+
+##helper function for makeGenerationHash. Converts a logical vector
+##i.e. a binary string to decimal representation.
+binary.to.decimal <- function (x) sum(2^(which(rev(x))-1))
+
+##This function creates a hash of SNP Name to some value, based on some criterion.
+##Criterion 1: the value is the integral of allele frequency. For ordering fixed snps.
+##Criterion 2: the value is the generation where allele frequency increases the most.
+##Criterion 3: the value is the generation where the measured B allele frequency hits its maximum.
+##Criterion 4: the value is an integer representing a block in overlap.matrix.
+##overlap.matrix is a block diagonal matrix in which SNPs that fix simultaneously
+##are clustered. All SNPs that fix simultaneously are keyed to the same integer--
+##the decimal representation of the binary string of that row in overlap.matrix.
+##Criterion 5: the value is the generation where the allele fixes--
+##the frequency crosses some threshold, like 0.95 for instance. This doesn't really work well though.
+##This hash is used to order SNPs based on when they fix, or peak in the population.
+##This hash is also used in makeMullerplotInput to generate nested genotypes on the line of descent.
+makeGenerationHash <- function(the.final.data,criterion=1,threshold=0.92) {
+  ##The index for the sort is the generation at which the measured B allele frequency hits its maximum.
+  the.ordered.data <- the.final.data
+  generation.hash <- list()
+  ##label the hash as to what kind of data it contains
+  generation.hash$`CRITERION` <- criterion
+
+  ## overlap.matrix is only used when this option is called.
+  ##also, only fixations are considered under this option.
+  ##only consider fixations for criterion 5.
+  if (criterion == 4 || criterion == 5) {
+    fixed.data <- partitionSNPs(the.final.data,get.fixations=TRUE)
+    the.ordered.data <- subset(the.ordered.data,the.ordered.data$SNP.Name %in% fixed.data)
+    if (criterion == 4)
+      overlap.matrix <- makeOverlapMatrix(the.ordered.data)
+  }
+  for (snp in unique(the.ordered.data$SNP.Name)){
+    illumina.snp.data <- subset(the.ordered.data, SNP.Name == snp)
+    sorted.illumina.snp.data <- illumina.snp.data[order(illumina.snp.data$order),]
+    mixed.pop.illumina.snp.data <- subset(sorted.illumina.snp.data, M.or.C == "M")
+    if (criterion == 1) {
+      ##Integrate frequency over time for the snp.
+      if (unique(mixed.pop.illumina.snp.data$calibrated))
+        freq.integral <- sum(mixed.pop.illumina.snp.data$predicted.b.allele.freq.fit)
+      else
+        freq.integral <- sum(mixed.pop.illumina.snp.data$measured.b.allele.freq)
+      generation.hash[[snp]] <- freq.integral
+    }
+    else if (criterion == 2) {
+      ##Find the interval between generations with the greatest increase in allele frequency.
+      b.allele.diffs <- diff(mixed.pop.illumina.snp.data$measured.b.allele.freq)
+      max.diff.index <- which(b.allele.diffs == max(b.allele.diffs))
+      low.gen.index <- max.diff.index
+      high.gen.index <- max.diff.index + 1
+      low.gen <- mixed.pop.illumina.snp.data[low.gen.index,]$generation
+      high.gen <- mixed.pop.illumina.snp.data[high.gen.index,]$generation
+      generation.hash[[snp]] <- low.gen
+    }
+    else if (criterion == 3) {
+      ##Order based on the maximum value.
+      max.freq <- max(illumina.snp.data$measured.b.allele.freq)
+      generation.hash[[snp]] <- min(subset(illumina.snp.data$generation, illumina.snp.data$measured.b.allele.freq == max.freq) ,na.rm=TRUE)
+    }
+    else if (criterion == 4) {
+      row <- overlap.matrix[snp,]
+      value <- binary.to.decimal(as.logical(row))
+      generation.hash[[snp]] <- value
+    }
+    else if (criterion == 5) {
+      timeseries <- getMixedPopFreqData(the.final.data,snp)
+      generations <- unique(mixed.pop.illumina.snp.data$generation)
+      smooth.timeseries <- smoothData(timeseries)
+      first.above.threshold <- min(which(sapply(smooth.timeseries,function(x) ifelse(x > threshold,TRUE,FALSE))))
+      generation.hash[[snp]] <- generations[first.above.threshold]
+    }
+  }
+  return(generation.hash)
+}
+##This function orders SNPs based on 1) when they fix 2) if they don't fix, when they peak.
+##Currently, it only works for calibrated SNPs which fix in the population.
+##It always uses B allele frequency to order SNPs.
+##For SNPs that fix in the population, it orders them by integrating frequency over time.
+##SNPs that fix earlier should have more area under the frequency curve.
+orderSNPs <- function(the.final.data, fixations=TRUE) {
+  crit <- ifelse(fixations,1,2)
+  generation.hash <- makeGenerationHash(the.final.data, crit)
+  ##ugly, but effective solution. Returns the snps in fixation order.
+  if (fixations)
+    return(names(sort(unlist(generation.hash),decreasing=TRUE )))
+  else
+    return(names(sort(unlist(generation.hash))))
+}
+
+## This function makes plots for Steve to post-process into a Muller Plot with
+## Illustrator.
+
+## Adjustable parameters for plotsForMuller:
+## 1) length of plot
+## 2) width of plot
+## 3) with or without error bars
+## 4) with or without gene name.
+
+plotsForMuller <- function(the.data, output, use.theta=TRUE, fixations=TRUE, add.err.bars=FALSE, width.parameter=7, height.parameter=7, with.gene.name=TRUE) {
+
+  pdf(output, width=width.parameter,height=height.parameter, useDingbats=FALSE)
+  
+  snps.to.graph <- c()
+  if (fixations) snps.to.graph <- partitionSNPs(the.data, use.theta=use.theta, get.fixations=TRUE) else snps.to.graph <- partitionSNPs(the.data, use.theta=use.theta, get.fixations=FALSE)
+  ##Order these SNPs.
+  the.snp.order <- orderSNPs(the.data, fixations)
+  ordered.mutations <- subset(the.snp.order, the.snp.order %in% snps.to.graph)
+  for (snp in ordered.mutations) {
+    
+    illumina.snp.data <- subset(the.data, SNP.Name == snp)
+    ##sort illumina.snp.data. This is important for the graphing to work properly.
+    sorted.illumina.snp.data <- illumina.snp.data[order(illumina.snp.data$order),]
+    ##Subset on mixed.data.
+    mixed.pop.illumina.snp.data <- subset(sorted.illumina.snp.data, M.or.C == "M")
+    
+    calibrated <- unique(mixed.pop.illumina.snp.data$calibrated)
+    generations <- mixed.pop.illumina.snp.data$generation
+    if (use.theta && calibrated) {
+      fit.data <- mixed.pop.illumina.snp.data$predicted.theta.fit
+      confint.upr <- mixed.pop.illumina.snp.data$predicted.theta.upr
+      confint.lwr <- mixed.pop.illumina.snp.data$predicted.theta.lwr
+    } else if (use.theta) {
+      fit.data <- mixed.pop.illumina.snp.data$measured.theta
+      confint.upr <- mixed.pop.illumina.snp.data$measured.theta.upr
+      confint.lwr <- mixed.pop.illumina.snp.data$measured.theta.lwr
+    } else if (calibrated) { ##calibrated B allele frequency used.
+      fit.data <- mixed.pop.illumina.snp.data$predicted.b.allele.freq.fit
+      confint.upr <- mixed.pop.illumina.snp.data$predicted.b.allele.freq.upr
+      confint.lwr <- mixed.pop.illumina.snp.data$predicted.b.allele.freq.lwr
+    } else { ##uncalibrated B allele frequency used.
+      fit.data <- mixed.pop.illumina.snp.data$measured.b.allele.freq
+      confint.upr <- mixed.pop.illumina.snp.data$measured.b.allele.freq.upr
+      confint.lwr <- mixed.pop.illumina.snp.data$measured.b.allele.freq.lwr
+    }
+    ##add data for generation 0.
+    generations <- c(0, generations)
+    fit.data <- c(0, fit.data)
+    confint.upr <- c(0, confint.upr)
+    confint.lwr <- c(0, confint.lwr)
+
+    ## Plot the trajectory for the SNP.
+    
+    trajectory.data <- data.frame(Generations=generations,Frequency=fit.data,Upper=confint.upr, Lower=confint.lwr)
+    trajectory <- ggplot(data=trajectory.data, aes(x=Generations,y=Frequency)) +
+      geom_line() + geom_point() + xlab("Generations") + ylab("Relative Abundance") +
+        theme_bw() + theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank()) + ylim(0,1.05)
+
+    limits <- aes(ymax=Upper, ymin=Lower)
+    if (add.err.bars)
+      trajectory <- trajectory + geom_errorbar(limits)
+    if (with.gene.name)
+      trajectory = trajectory + ggtitle(snp)
+    print(trajectory)                   
+
+  }
+  dev.off()
+}
+
+##This function superimpose graphs from a list of mixed plate datasets.
+##It does not do this for all the data.
+compareMixedPopDatasets <- function(calibrated.datasets, output="/Users/Rohandinho/Desktop/MixedComparison.pdf", use.theta=TRUE) {
+  pdf(output)
+  if (use.theta) {
+    ##Pull out the first calibrated dataset.
+    the.first.calibrated <- calibrated.datasets[[1]]
+    ##choose fixations. choose life.
+    ##these 'fixations' are really only the calibrated SNPs. Fixations after 20K are not included.
+    fixations <- unique(subset(the.first.calibrated$SNP.Name, sapply(the.first.calibrated$predicted.theta.fit,function (x) if (is.na(x)) FALSE else TRUE )))
+    for (snp in fixations) {
+      ##plot the first dataset.
+      first.illumina.snp.data <- subset(the.first.calibrated, SNP.Name == snp)
+      ##sort illumina.snp.data. This is important for the graphing to work properly.
+      sorted.first.illumina.snp.data <- first.illumina.snp.data[order(first.illumina.snp.data$order),]
+      ##Subset on mixed.data.
+      first.mixed.pop.illumina.snp.data <- subset(sorted.first.illumina.snp.data, M.or.C == "M")
+      the.title <- paste(snp, ":\n", "Predicted Theta - Mixed Populations")
+      plot(first.mixed.pop.illumina.snp.data$generation, first.mixed.pop.illumina.snp.data$predicted.theta.fit,col="red",main=the.title, xlab="Generation", ylab= "Predicted Allele Frequency")
+      lines(x=first.mixed.pop.illumina.snp.data$generation, first.mixed.pop.illumina.snp.data$predicted.theta.fit,col="red")
+
+      ##overlay the rest of the datasets onto the graph.
+      for (i in seq(from=2, to=length(calibrated.datasets))) {
+        ## Set the color for the current dataset.
+        ## (i+1 is used because 'red' is the second elt after 'black')
+        current.color = palette()[i+1]
+        the.next.calibrated <- calibrated.datasets[[i]]
+        ##overlay the next dataset.
+        next.illumina.snp.data <- subset(the.next.calibrated, SNP.Name == snp)
+        ##sort illumina.snp.data. This is important for the graphing to work properly.
+        sorted.next.illumina.snp.data <- next.illumina.snp.data[order(next.illumina.snp.data$order),]
+        ##Subset on mixed.data.
+        next.mixed.pop.illumina.snp.data <- subset(sorted.next.illumina.snp.data, M.or.C == "M")
+        points(next.mixed.pop.illumina.snp.data$generation, next.mixed.pop.illumina.snp.data$predicted.theta.fit,col=current.color)
+        lines(x=next.mixed.pop.illumina.snp.data$generation, next.mixed.pop.illumina.snp.data$predicted.theta.fit,col=current.color)
+        ##add.error.bars(mixed.pop.illumina.snp.data$generation,
+        ##mixed.pop.illumina.snp.data$predicted.theta.fit,
+        ##mixed.pop.illumina.snp.data$predicted.theta.upr,
+        ##mixed.pop.illumina.snp.data$predicted.theta.lwr, col="orange")
+      }
+    }
+  }
+  dev.off()
+}
+
+## This function compares allele frequencies calculated from clone data
+## with those calculated from mixed pop. data.
+#Examples of how to generate input for this function follow.
+#Example 1: clone.freqs <- read.table("10K_allele_frequencies.tab", sep="\t", header=F)
+#Example 2: clone.freqs <- countAlleleFrequencies(genotype.table)
+compareCloneAndMixedFreqs <- function(clone.freqs,the.final.data, gen=10000,outfile="/Users/Rohandinho/Desktop/Comparison.pdf") {
+  ##Don't include the calibration standard!
+  mixed.clone.data <- subset(subset(the.final.data, generation == gen),M.or.C == 'M')
+  mixed.dot.names <- sapply(mixed.clone.data$SNP.Name, function (snp) gsub("-",".",snp))
+  mixed.clone.freqs <- mixed.clone.data$predicted.b.allele.freq.fit
+  mixed.clone.freq.upr <- mixed.clone.data$predicted.b.allele.freq.upr
+  mixed.clone.freq.lwr <- mixed.clone.data$predicted.b.allele.freq.lwr
+  matched.freqs <- data.frame(mixed.dot.names,mixed.clone.freqs,mixed.clone.freq.upr,
+                              mixed.clone.freq.lwr)
+  ##Remove rows with missing values.
+  matched.freqs <- subset(matched.freqs,sapply(matched.freqs$mixed.clone.freqs, function(x) if (is.na(x)) FALSE else TRUE))
+  ##average duplicate data.
+  averaged.matched.freqs <- aggregate(matched.freqs[,!names(matched.freqs) %in% c("mixed.dot.names")], by=list(matched.freqs$mixed.dot.names), FUN=function(x) mean(x,na.rm=T))
+  colnames(averaged.matched.freqs) <- c("SNP.Name", "Mixed.Pop.Frequency",
+                                        "Mixed.Pop.Upr", "Mixed.Pop.Lwr")
+
+  paired.data <- merge(clone.freqs, averaged.matched.freqs)
+  paired.data$SNP.Name <- as.vector(paired.data$SNP.Name)
+  paired.data$Clone.Allele.Freq <- as.vector(paired.data$Clone.Allele.Freq)
+  paired.data$Allele.Freq <- as.vector(paired.data$Allele.Freq)
+
+  ## Draw error bars in both directions on the plots.
+  clone.error.min = sapply(paired.data$confint.lwr, trim.errors)
+  clone.error.max = sapply(paired.data$confint.upr, trim.errors)
+  mixed.error.min = sapply(paired.data$Mixed.Pop.Lwr, trim.errors)
+  mixed.error.max = sapply(paired.data$Mixed.Pop.Upr, trim.errors)
+
+  comp.plot <- qplot(x=Mixed.Pop.Frequency,y=Frequency, data=paired.data,
+                     xlim=c(0,1), ylim=c(0,1),
+                     main="Clone Allele Frequency versus Mixed Pop. Allele Frequency") + ylab("Clone Allele Frequency") + xlab("Genotyping Allele Frequency") +
+                       geom_errorbar(aes(ymin=clone.error.min,ymax=clone.error.max), color='black') +
+                         geom_errorbarh(aes(xmin=mixed.error.min,xmax=mixed.error.max), color='black')
+  comp.plot + opts(panel.grid.minor = theme_blank(), panel.background = theme_rect(colour = "white"), axis.line = theme_segment()) +
+    geom_abline(intercept = 0, slope = 1) + opts(axis.line = theme_segment())
+  ggsave(outfile)
+
+  ##fit a regression through the intercept comparing these datasets.
+  comp.regression <- lm(paired.data$Frequency ~ 0 + paired.data$Allele.Freq)
+  return(comp.regression)
+}
+
+##This function makes a histogram of the time that each snp takes to fix.
+##This is a conservative (i.e., smaller)  estimate of the true times to fixation for each snp--this is also subject to and sensitive to noise in the data.
+makeTimeHistogram <- function (the.final.data, interval=c(0.05,0.95), outfile="~/Desktop/timehist.png", omitfirst2K=FALSE, coarse.grained=FALSE) {
+  #pick out the SNPs that fixed in the population.
+  fixed.snps <- partitionSNPs(the.final.data, get.fixations=TRUE)
+
+  left.bound <- interval[1]
+  right.bound <- interval[2]
+  snps.to.fixation.times <- list()
+  for (snp in fixed.snps) {
+    illumina.snp.data <- subset(the.final.data, SNP.Name == snp)
+    sorted.illumina.snp.data <- illumina.snp.data[order(illumina.snp.data$order),]
+    mixed.pop.illumina.snp.data <- subset(sorted.illumina.snp.data, M.or.C == "M")
+
+    if(omitfirst2K) {
+      omit.these <- c(500,1000,1500)
+      mixed.pop.illumina.snp.data <- subset(mixed.pop.illumina.snp.data, !(mixed.pop.illumina.snp.data$generation %in% omit.these))
+    }
+
+    if(coarse.grained) {
+      mixed.pop.illumina.snp.data <- subset(mixed.pop.illumina.snp.data, sapply(mixed.pop.illumina.snp.data$generation, function (x) ifelse(x %% 1000,FALSE,TRUE)))
+    }
+    
+    first.above.left <- NA
+    first.above.right <- NA
+    ##find the first generation where frequency > left bound and
+    ##find the first generation where frequency > right bound.
+    ##Keep track of two points in a row, to avoid problems with transient peaks (see gltB-del-d data).
+    prev.allele.freq <- 0
+    cur.allele.freq <- 0
+    for (gen in mixed.pop.illumina.snp.data$generation) {
+      cur.data <- mixed.pop.illumina.snp.data[mixed.pop.illumina.snp.data$generation == gen,]
+      ##Use the fitted b allele freq value for allele frequency if calibrated.
+      ##use the measured b allele freq value if uncalibrated (mutT insertion)
+      prev.allele.freq <- cur.allele.freq
+      if (unique(cur.data$calibrated))
+        cur.allele.freq <- mean(cur.data$predicted.b.allele.freq.fit, na.rm=T)
+      else
+        cur.allele.freq <- mean(cur.data$measured.b.allele.freq, na.rm=T)
+     
+      ##reset first.above.left if cur.allele.freq == 0, to avoid problems with transient peaks.
+      if (prev.allele.freq == 0 && cur.allele.freq == 0)
+        first.above.left <- NA
+      if (is.na(first.above.left) && cur.allele.freq > left.bound)
+        first.above.left <- gen
+      if (is.na(first.above.right) && cur.allele.freq > right.bound)
+        first.above.right <- gen
+      if (!is.na(first.above.left) && !is.na(first.above.right))
+        break
+    }
+    ##Now take the difference; this is the 'fixation time'.
+    fixation.time <- first.above.right - first.above.left
+    ##Skip mutations with a fixation time of 0.
+    if (fixation.time == 0)
+      next
+    snps.to.fixation.times[[snp]] <- fixation.time
+  }
+  ##Now, make a histogram of times to fixation.
+  library(ggplot2)
+  times <- unlist(snps.to.fixation.times)
+  time.plot.data <- data.frame(times)
+  ##sort this dataframe by the order in which snps fixed.
+  ordered <- orderSNPs(the.final.data)
+  ordered.fixations <- ordered[ordered %in% fixed.snps]
+  ordered.times <- sapply(ordered.fixations, function (x) time.plot.data[x,])
+  ordered.time.plot.data <- data.frame(ordered.times)
+  ordered.time.plot.data$snp <- row.names(ordered.time.plot.data)
+  colnames(ordered.time.plot.data)[1] <- "time"
+  the.nine <- c("Ara-1-gltB-del-d", "Ara-1-yghJ-snp", "Ara-1-rpsM-snp",
+                "Ara-1-yhdG-fis-snp", "Ara-1-yedW-yedX-snp", "Ara-1-pflC-del-d",
+                "Ara-1-araJ-snp", "Ara-1-nadR..2-snp", "Ara-1-narI-ychS-snp")
+  ordered.time.plot.data$Coexistence <- ordered.time.plot.data$snp %in% the.nine
+  #the.nine.data <- subset(ordered.time.plot.data,
+  #                        ordered.time.plot.data$snp %in% the.nine)
+  #the.rest.data <- subset(ordered.time.plot.data,
+  #                        !(ordered.time.plot.data$snp %in% the.nine))
+  ##This is for testing.
+  ##print(ordered.time.plot.data)
+  ##write.csv(time.plot.data,file="/Users/Rohandinho/Desktop/timeplotdata.csv")
+ 
+    timeplot <- qplot(time, data=ordered.time.plot.data, geom="histogram", binwidth=500,fill=Coexistence) + opts(title="Histogram of Fixation Times for each allele",
+                                                                                          panel.grid.minor = theme_blank(), panel.background = theme_rect(colour = "white"),
+                                                                                          axis.line = theme_segment())
+    ggsave(outfile)
+
+  return(ordered.time.plot.data)
+}
+
+##helper function for makeSimultaneousSweepHistogram,
+##and for compareSequencingToGenotyping. For the latter, the option include.error
+##is used to return the upper and lower confidence interval limits.
+##This is a wrapper for the code to get frequency data for a particular SNP.
+##Unfortunately, at the moment, the data type returned by this function
+##if include.error is TRUE is different from when include.error is FALSE.
+getMixedPopFreqData <- function (the.final.data, snp, include.error=FALSE) {
+  illumina.snp.data <- subset(the.final.data, SNP.Name == snp)
+  sorted.illumina.snp.data <- illumina.snp.data[order(illumina.snp.data$order),]
+  mixed.pop.illumina.snp.data <- subset(sorted.illumina.snp.data, M.or.C == "M")
+  ##if the SNP has been calibrated.
+  if (unique(mixed.pop.illumina.snp.data$calibrated)) {
+    ##average multiple values over the generation timepoint;
+    ##i.e. give mean for the three 10000 generation measurements.
+    timeseries <- as.vector(by(mixed.pop.illumina.snp.data[,c("predicted.b.allele.freq.fit")],INDICES=list(mixed.pop.illumina.snp.data$generation),FUN=mean))
+    confint.upr <- as.vector(by(mixed.pop.illumina.snp.data[,c("predicted.b.allele.freq.upr")],INDICES=list(mixed.pop.illumina.snp.data$generation),FUN=mean))
+    confint.lwr <- as.vector(by(mixed.pop.illumina.snp.data[,c("predicted.b.allele.freq.lwr")],INDICES=list(mixed.pop.illumina.snp.data$generation),FUN=mean))
+  } else {
+    timeseries <- as.vector(by(mixed.pop.illumina.snp.data[,c("measured.b.allele.freq")],INDICES=list(mixed.pop.illumina.snp.data$generation),FUN=mean))
+    confint.upr <- as.vector(by(mixed.pop.illumina.snp.data[,c("measured.b.allele.freq.upr")],INDICES=list(mixed.pop.illumina.snp.data$generation),FUN=mean))
+    confint.lwr <- as.vector(by(mixed.pop.illumina.snp.data[,c("measured.b.allele.freq.lwr")],INDICES=list(mixed.pop.illumina.snp.data$generation),FUN=mean))
+  }
+  if (include.error)
+    return(data.frame(Upper=confint.upr,Mean=timeseries,Lower=confint.lwr))
+  else
+    return(timeseries)
+}
+
+##This smooths data near zero and one, and considers
+##a window of points for the smoothing.
+smoothData <- function(timeseries) {
+  smoothed.series <- timeseries
+  for (i in 2:(length(smoothed.series)-1)) {
+    prev.datum <- smoothed.series[i-1]
+    next.datum <- smoothed.series[i+1]
+    if (prev.datum > 0.95 && next.datum > 0.95)
+      smoothed.series[i] <- mean(c(prev.datum,next.datum))
+    if (prev.datum < 0.05 && next.datum < 0.05)
+      smoothed.series[i] <- mean(c(prev.datum,next.datum))
+   
+  }
+  ##set all values less than 0 to 0, and all values greater than 1 to 1.
+  smoothed.series <- sapply(smoothed.series, function (x) ifelse (x<0,0,x))
+  smoothed.series <- sapply(smoothed.series, function (x) ifelse (x>1,1,x))
+  
+  return(smoothed.series)
+}
+
+##This function ensures that the output of makeOverlapMatrix is block-diagonal.
+is.block.diagonal <- function(overlap.matrix) {
+  num.rows <- length(overlap.matrix[1,])
+  for (i in 1:num.rows) { 
+    cur.row <- overlap.matrix[i,]
+    first.one <- min(which(as.logical(cur.row)))
+    last.one <-  max(which(as.logical(cur.row)))
+    for (j in first.one:last.one)
+      if (cur.row[j] != 1)
+        return(FALSE)
+  }
+  return(TRUE)
+}
+
+##This function clusters mutations based on whether they fix simultaneously or not.
+##fixation.threshold should be a little low, so that similarity.threshold can be
+##as stringent as possible.
+makeOverlapMatrix <- function (the.final.data, omitfirst2K=FALSE, coarse.grained=FALSE, fixation.threshold=0.92, similarity.threshold=0.99) {
+  ##Smooth the data by considering sets of three points.
+  ##Then, do the cross-correlation of the derivative of each time series.
+
+  fixed.snps <- partitionSNPs(the.final.data, get.fixations=TRUE)
+  ordered <- orderSNPs(the.final.data)
+  ordered.fixations <- ordered[ordered %in% fixed.snps]
+
+  overlap.matrix = array(0,c(length(fixed.snps),length(fixed.snps)))
+  rownames(overlap.matrix) <- ordered.fixations
+  colnames(overlap.matrix) <- ordered.fixations
+
+  gen.hash <- makeGenerationHash(the.final.data, criterion=5, threshold=fixation.threshold)
+  
+  for (i in 1:length(ordered.fixations)) {
+    for (j in 1:length(ordered.fixations)) {
+      if (i > j)
+        next
+      snp.i <- ordered.fixations[i]
+      snp.j <- ordered.fixations[j]
+      timeseries.i <- getMixedPopFreqData(the.final.data,snp.i)
+      timeseries.j <- getMixedPopFreqData(the.final.data,snp.j)
+
+      ##smooth noise around 0 and 1.
+      smoothed.data.i <- smoothData(timeseries.i)
+      smoothed.data.j <- smoothData(timeseries.j)
+
+      ##If we're omitting the first 2000 generations of evolution,
+      ##for comparison to simulations:
+      if (omitfirst2K) {
+        ##Ignore mutations which fix in the first 2000 generations.
+        ##56 is the minimum allele frequency integral if you fixed
+        ##in the first 2000 generations.
+        if ((sum(smoothed.data.i) > 56) || (sum(smoothed.data.j) > 56))
+          next
+        
+        smoothed.data.i <- smoothed.data.i[4:length(smoothed.data.i)]
+        smoothed.data.j <- smoothed.data.j[4:length(smoothed.data.j)]
+        if (coarse.grained) {
+          keep.these <- c(rep(c(TRUE,FALSE),28),TRUE)
+          smoothed.data.i <- subset(smoothed.data.i,keep.these)
+          smoothed.data.j <- subset(smoothed.data.j,keep.these)
+        }
+      }
+      else{
+        if (coarse.grained) {
+          keep.these <- rep(c(FALSE,TRUE),30)
+          smoothed.data.i <- subset(smoothed.data.i,keep.these)
+          smoothed.data.j <- subset(smoothed.data.j,keep.these)
+        }
+      }
+      
+      delta.i <- diff(smoothed.data.i)
+      delta.j <- diff(smoothed.data.j)
+      cross.correlation <- as.vector(ccf(delta.i,delta.j,lag=0, plot=FALSE)$acf)
+      
+      snp.i.fixation.timepoint <- gen.hash[[snp.i]]
+      snp.j.fixation.timepoint <- gen.hash[[snp.j]]
+      if (snp.i.fixation.timepoint == snp.j.fixation.timepoint) {
+        overlap.matrix[i,j] <- 1
+        overlap.matrix[j,i] <- 1
+        next
+      }
+      else {  
+##      overlap.matrix[i,j] <- cross.correlation
+##      overlap.matrix[j,i] <- cross.correlation
+        overlap.matrix[i,j] <- ifelse(cross.correlation > similarity.threshold,1,0)
+        overlap.matrix[j,i] <- ifelse(cross.correlation > similarity.threshold,1,0)
+      }
+      
+    }
+  }
+  ##This is for testing.
+  write.csv(overlap.matrix,file="/Users/Rohandinho/Desktop/test.csv")
+
+  ##Check that the matrix is block diagonal. If it is not,
+  ##print an error message, and die.
+  if (is.block.diagonal(overlap.matrix)) {
+    return(overlap.matrix)
+  }
+  else {
+    print("ERROR: overlap.matrix is not block-diagonal!")
+    stop()
+  }
+    
+}
+
+#This function makes a histogram for the distribution of n=k mutations
+##that go to fixation simultaneously.
+makeSimultaneousSweepHistogram <- function (the.final.data, outfile="/Users/Rohandinho/Desktop/test.pdf", omitfirst2K=FALSE, coarse.grained=FALSE) {
+
+  overlap.matrix <- makeOverlapMatrix(the.final.data,omitfirst2K, coarse.grained)
+  ##Make a histogram from overlap.matrix.
+  ##This is the distribution of the number of snps that cluster in the matrix.
+  my.hist <- rep(0,10)
+  for (i in 1:length(overlap.matrix[1,])) {
+    cur.clump.size <- sum(overlap.matrix[i,])
+    my.hist[cur.clump.size] <- my.hist[cur.clump.size] + 1
+  }
+  my.hist <- my.hist/1:length(my.hist)
+  my.hist.data.frame <- data.frame(Number.of.Mutations.that.fix.together=factor(1:length(my.hist)),Fixation.Events=my.hist)
+  my.hist.plot <- ggplot(my.hist.data.frame,aes(x=Number.of.Mutations.that.fix.together,y=Fixation.Events)) + geom_bar()
+  my.hist.plot + scale_x_discrete('Number of Mutations that sweep together') + scale_y_continuous('Number of Fixation Events') + opts(title="Number of simultaneously fixed mutations in Ara-1 until 30K generations", panel.grid.minor = theme_blank(), panel.background = theme_rect(colour = "white"), axis.line = theme_segment())
+  ggsave(outfile)
+}
+
+##This is a helper function used to get the relevant pyrosequencing data
+##for plotting purposes. This is used in plotPyrosequencingResults and
+##compareSequencingToGenotyping.
+preparePyrosequencingTable <- function(pyro.data) {
+  pyro.table <- subset(pyro.data,subset=sapply(pyro.data$Sample,function (x) ifelse(x < 6, FALSE,TRUE)), select=c("Description", "Locus", "Evolved.Frequency"))
+  ##rename "Description" to "Generation" and "Evolved.Frequency" to "Frequency."
+  names(pyro.table)[names(pyro.table) == "Description"] <- "Generation"
+  names(pyro.table)[names(pyro.table) == "Evolved.Frequency"] <- "Frequency"
+  ##change Generation from a factor to actual numbers.
+  pyro.table$Generation <- as.numeric(as.vector(pyro.table$Generation))
+  return(pyro.table)
+}
+
+##This function replicates the graph that Jeff Barrick made in
+##"Pyrosequencing Results Summary.xlsx", but using ggplot2.
+plotPyrosequencingResults <- function(pyro.data, outfile="/Users/Rohandinho/Desktop/test.pdf") {
+  ##make a data frame containing only the relevant data for ggplot2 to use.
+  data.to.plot <- preparePyrosequencingTable(pyro.data)
+##  quartz()
+  my.plot <- ggplot(data.to.plot,
+                    aes(x=Generation, y=Frequency,
+                        group=Locus, colour=Locus)) +
+    geom_point() + geom_line()
+  my.plot + opts(title="Dynamics of Marker Alleles during Coexistence", panel.grid.minor = theme_blank(), panel.background = theme_rect(colour = "white"),
+                 axis.line = theme_segment())
+  ggsave(outfile)
+}
+
+##This function plots the same data plotted by the previous function,
+##but using the Veracode data instead.
+makeGenotypingPyroPlot <- function (the.final.data, outfile="/Users/Rohandinho/Desktop/test.pdf") {
+
+ gltB.freqs <- getMixedPopFreqData(the.final.data,"Ara-1-gltB-del-d")
+ rpsA.freqs <- getMixedPopFreqData(the.final.data, "Ara-1-rpsA-snp")
+ yghJ.freqs <- getMixedPopFreqData(the.final.data, "Ara-1-yghJ-snp")
+ generations <- seq(500,30000,by=500)
+ gltB.data <- data.frame(Locus=rep("gltB",60),Frequency=gltB.freqs,Generation=generations)
+ rpsA.data <- data.frame(Locus=rep("rpsA",60),Frequency=rpsA.freqs,Generation=generations)
+ yghJ.data <- data.frame(Locus=rep("yghJ",60),Frequency=yghJ.freqs,Generation=generations)
+ combined.data <- rbind(gltB.data,rpsA.data,yghJ.data)
+ ##only plot data from 5000 to 14000 generations.
+ relevant.gens <- seq(5000,14000,by=500)
+ data.to.plot <- combined.data[combined.data$Generation %in% relevant.gens,]
+ ##quartz()
+ my.plot <- ggplot(data.to.plot,
+                    aes(x=Generation, y=Frequency,
+                        group=Locus, colour=Locus)) +
+    geom_point() + geom_line()
+  my.plot + opts(title="Dynamics of Marker Alleles during Coexistence", panel.grid.minor = theme_blank(), panel.background = theme_rect(colour = "white"),
+                 axis.line = theme_segment())
+  ggsave(outfile)
+}
+
+##This helper function is used to trim error bars--
+## Since error bars can't go past the axes, fix values that go past zero or one
+## to zero or one.
+trim.errors <- function (x) {
+  if (is.na(x))
+    return(NA)
+  else if (x > 1)
+    return(1)
+  else if(x < 0)
+    return(0)
+  else
+    return(x)
+}
+
+##This function makes a scatterplot comparing the allele frequency measurements
+##from the pyrosequencing results to the relevant mixed population genotyping data.
+compareSequencingToGenotyping <- function(the.final.data, pyro.data, outfile="/Users/Rohandinho/Desktop/test.pdf") {
+  pyro.table <- preparePyrosequencingTable(pyro.data)
+  ## get relevant genotyping data.
+  gltB.data <- getMixedPopFreqData(the.final.data,"Ara-1-gltB-del-d",include.error=TRUE)
+  rpsA.data <- getMixedPopFreqData(the.final.data,"Ara-1-rpsA-snp",include.error=TRUE)
+  yghJ.data <- getMixedPopFreqData(the.final.data,"Ara-1-yghJ-snp",include.error=TRUE)
+  generations <- seq(from=500,to=30000,by=500)
+  gltB.data <- cbind(gltB.data,Locus=rep("gltB",60),Generation=generations)
+  rpsA.data <- cbind(rpsA.data,Locus=rep("rpsA",60),Generation=generations)
+  yghJ.data <- cbind(yghJ.data,Locus=rep("yghJ",60),Generation=generations)
+  
+  ##Now put together the data frame for ggplot2 to use.
+  genotyping.data <- rbind(gltB.data,rpsA.data,yghJ.data)
+  ##trim errors.
+  genotyping.data$Upper <- sapply(genotyping.data$Upper, trim.errors)
+  genotyping.data$Lower <- sapply(genotyping.data$Lower, trim.errors)
+  data.to.plot <- merge(pyro.table,genotyping.data)
+  data.to.plot$Frequency <- sapply(data.to.plot$Frequency,function(x) return(x/100))
+##  quartz()
+  comp.plot <- ggplot(data.to.plot,
+                      aes(x=Mean,y=Frequency, group=Locus, color=Locus)) +
+                        geom_point()  + ##geom_errorbar(aes(ymin=Lower,ymax=Upper))
+  ##error bars are more of a distraction, so they are commented out.
+                          scale_x_continuous('Mixed Pop. Genotyping Allele Frequency Estimates') + scale_y_continuous('Pyrosequencing Allele Frequency Estimates') +
+                            opts(panel.grid.minor = theme_blank(), panel.background = theme_rect(colour = "white"), axis.line = theme_segment())
+  ggsave(outfile)
+}
+
+## This function makes a scatterplot comparing allele frequencies
+##as measured in previous mixed pop. sequencing
+##(Jeff's Cold Spring Harbor paper results) to the genotyping results.
+compareCSHresultsToGenotyping <- function(the.final.data, csh.data, outfile="/Users/Rohandinho/Desktop/test.pdf") {
+
+  ## Make the names compatible between the two datasets.
+  names(csh.data)[names(csh.data)=="gene"] = "SNP.Name"
+
+  ## Divide the final.data based on whether the SNPs were calibrated (i.e. they fixed in the pop.)
+  fixed <- partitionSNPs(the.final.data)
+  fixed.final.data <- the.final.data[the.final.data$SNP.Name %in% fixed,]
+
+  ##Merge the two datasets, but only compare the mixed data (not the clone data).
+  mixed.pop.fixed <- merge(fixed.final.data[fixed.final.data$M.or.C=="M",], csh.data)
+
+  ## Make plots with ggplot2, and set up linear models.
+  ## Draw error bars in both directions on the plots.
+  y.error.min = sapply(mixed.pop.fixed$predicted.b.allele.freq.lwr, trim.errors)
+  y.error.max = sapply(mixed.pop.fixed$predicted.b.allele.freq.upr, trim.errors)
+  x.error.min = sapply(mixed.pop.fixed$CL.left, trim.errors)
+  x.error.max = sapply(mixed.pop.fixed$CL.right, trim.errors)
+
+  ##quartz()
+  comp.plot <- qplot(frequency, predicted.b.allele.freq.fit, data=mixed.pop.fixed, xlim=c(0,1), ylim=c(0,1)) +
+    geom_errorbar(aes(ymin=y.error.min,ymax=y.error.max), color='black') +
+      geom_errorbarh(aes(xmin=x.error.min,xmax=x.error.max), color='black')
+  comp.plot + opts(panel.grid.minor = theme_blank(), panel.background = theme_rect(colour = "white"), axis.line = theme_segment()) +
+    geom_abline(intercept = 0, slope = 1) + opts(axis.line = theme_segment())
+  ggsave(outfile)
+
+  ##a regression comparing the CSH data to the calibrated Veracode data, with intercept = 0.
+  cali.regression  <- lm(mixed.pop.fixed$frequency~ 0 + mixed.pop.fixed$predicted.b.allele.freq.fit)
+  confint(cali.regression, level=0.999)
+  ##Even at this level, the estimated slope is significantly different from 1!
+  confint(cali.regression, level=0.9999)
+}

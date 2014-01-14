@@ -1,0 +1,31 @@
+## BadSNPAssays.txt by Rohan Maddamsetti, 4/18/2011
+## This is a list of SNP assays that plainly didn't work across all datasets.
+## This decision was based on looking at the averaged plate data
+## (currently called finalfudge.pdf), and at the 7.5K and 10K heatmaps.
+## NOTE 1: Ara-1-hslU-snp is excluded, but it may have occurred independently
+## in both competing clades existing at 10K generations.
+## NOTE 2: All rearrangement assays are excluded by default for technical
+## reasons.
+## NOTE 3: Ara−1−ompF−asnS−snp and Ara−1−ompF−asnS..3−snp assays are excluded.
+## There is some evidence of cross-reactivity between these snps.
+## There's an unassayed SNP one position away from ompF-asnS..3snp that was found
+## in the Cold Spring Harbor Mixed Population Sequencing paper, that might be responsible
+## for this observation.
+## NOTE4: Ara-1-kup-insJ-5-ins-u is excluded because the specificity of the
+## assay is questionable.
+Ara-1-aroA-ycaL-del-u
+Ara-1-atoC-snp
+Ara-1-glmU-atpC-ins-d
+Ara-1-gyrB-snp
+Ara-1-hslU-snp
+Ara-1-hypF-snp
+Ara-1-iclR-metH-snp
+Ara-1-kup-insJ-5-ins-u
+Ara-1-manB-cpsG-xst-1
+Ara-1-nadR-snp
+Ara-1-nmpC-ECB_00513-xst-2
+Ara-1-nrdE-del-u
+Ara-1-ompF-asnS-snp
+Ara-1-ompF-asnS..3-snp
+Ara-1-pykF..2-ins-u
+Ara-1-topA..2-snp

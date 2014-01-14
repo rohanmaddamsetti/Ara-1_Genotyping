@@ -1,0 +1,26 @@
+#!/usr/bin/perl -w
+
+## formatMixedPopSequencing.pl by Rohan Maddamsetti.
+## This script reformats MixedPopSequencingSNPs.csv so that
+## 1) the names of genes are consistent with the names of SNPs in the
+## Veracode project, and 2) so that the data is nicely readable in R.
+
+use strict;
+use Text::CSV;
+
+##This stuff is boilerplate code from the Text::CSV documentation.
+my @rows;
+my $csv = Text::CSV->new ( { binary => 1 } ) or
+  die "Cannot use CSV: ".Text::CSV->error_diag ();
+
+open my $fh, "<:encoding(cp1252)", "MixedPopSequencingSNPs.csv" or die "WTF: $!";
+while (my $row = $csv->getline($fh)) {
+  push @rows, $row;
+}
+$csv->eof or $csv->error_diag();
+close $fh;
+
+# Now, go through each row of data, and modify the gene names.
+
+
+

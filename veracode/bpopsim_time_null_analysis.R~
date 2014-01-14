@@ -1,0 +1,5 @@
+##  bpopsim_time_null_analysis.R by Rohan Maddamsetti
+##  Input: sorted_cat_longest_sweep_time.tab.
+
+
+data <- read.csv("input/sorted_cat_longest_sweep_time.tab", header=FALSE)

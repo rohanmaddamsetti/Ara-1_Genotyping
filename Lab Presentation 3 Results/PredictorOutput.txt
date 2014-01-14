@@ -1,0 +1,754 @@
+
+R version 2.10.1 (2009-12-14)
+Copyright (C) 2009 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> options(STERM='iESS', editor='emacsclient')
+> source("/Users/Rohandinho/Desktop/LTEE_Genotyping/GenotypePredictor.R")
+[1] 30000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 29500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 29000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 28500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 28000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-iclR-snp"         "Ara-1-infB-snp"        
+[10] "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"         "Ara-1-mrdA-snp"        
+[13] "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"         "Ara-1-pcnB-snp"        
+[16] "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"         "Ara-1-rpsM-snp"        
+[19] "Ara-1-spoT-snp"         "Ara-1-topA-snp"         "Ara-1-ybaL-ins-d"      
+[22] "Ara-1-yedW-yedX-snp"    "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"        
+
+Slot "frequency":
+[1] 1
+
+[1] 27500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-infB-snp"        
+[10] "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"         "Ara-1-mrdA-snp"        
+[13] "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"         "Ara-1-pcnB-snp"        
+[16] "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"         "Ara-1-rpsM-snp"        
+[19] "Ara-1-spoT-snp"         "Ara-1-topA-snp"         "Ara-1-ybaL-ins-d"      
+[22] "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"    "Ara-1-yegI-snp"        
+[25] "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 27000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"         "Ara-1-pcnB-snp"        
+[16] "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"         "Ara-1-rpsM-snp"        
+[19] "Ara-1-spoT-snp"         "Ara-1-topA-snp"         "Ara-1-ybaL-ins-d"      
+[22] "Ara-1-yedW-yedX-snp"    "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"        
+[25] "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 26500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 26000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 25500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 25000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"         "Ara-1-rpsM-snp"        
+[19] "Ara-1-spoT-snp"         "Ara-1-topA-snp"         "Ara-1-ybaL-ins-d"      
+[22] "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"    "Ara-1-yegI-snp"        
+[25] "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 24500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 24000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-arcB-snp"     "Ara-1-ebgR-snp"     "Ara-1-glpE-snp"    
+ [4] "Ara-1-hslU-snp"     "Ara-1-iclR-snp"     "Ara-1-infB-snp"    
+ [7] "Ara-1-malT-snp"     "Ara-1-mrdA-snp"     "Ara-1-nadR..2-snp" 
+[10] "Ara-1-pcnB-snp"     "Ara-1-pflC-del-d"   "Ara-1-rpsD-snp"    
+[13] "Ara-1-rpsM-snp"     "Ara-1-spoT-snp"     "Ara-1-topA-snp"    
+[16] "Ara-1-yegI-snp"     "Ara-1-yghJ-snp"     "Ara-1-yhdG-fis-snp"
+
+Slot "frequency":
+[1] 1
+
+[1] 23500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 23000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 22500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 22000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-topA-snp"         "Ara-1-ybaL-ins-d"      
+[22] "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"    "Ara-1-yegI-snp"        
+[25] "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 21500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 21000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 20500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 20000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"         "Ara-1-arcB-snp"         "Ara-1-dhaM-snp"        
+ [4] "Ara-1-ebgR-snp"         "Ara-1-glpE-snp"         "Ara-1-gltB-del-d"      
+ [7] "Ara-1-gltI-snp"         "Ara-1-hslU-snp"         "Ara-1-iclR-snp"        
+[10] "Ara-1-infB-snp"         "Ara-1-kup-insJ-5-ins-u" "Ara-1-malT-snp"        
+[13] "Ara-1-mrdA-snp"         "Ara-1-nadR..2-snp"      "Ara-1-nagC-snp"        
+[16] "Ara-1-pcnB-snp"         "Ara-1-pflC-del-d"       "Ara-1-rpsD-snp"        
+[19] "Ara-1-rpsM-snp"         "Ara-1-spoT-snp"         "Ara-1-topA-snp"        
+[22] "Ara-1-ybaL-ins-d"       "Ara-1-ybjN-potF-snp"    "Ara-1-yedW-yedX-snp"   
+[25] "Ara-1-yegI-snp"         "Ara-1-yghJ-snp"         "Ara-1-yhdG-fis-snp"    
+
+Slot "frequency":
+[1] 1
+
+[1] 19500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"      "Ara-1-arcB-snp"      "Ara-1-dhaM-snp"     
+ [4] "Ara-1-ebgR-snp"      "Ara-1-glpE-snp"      "Ara-1-gltB-del-d"   
+ [7] "Ara-1-hslU-snp"      "Ara-1-iclR-snp"      "Ara-1-infB-snp"     
+[10] "Ara-1-malT-snp"      "Ara-1-mrdA-snp"      "Ara-1-nadR..2-snp"  
+[13] "Ara-1-nagC-snp"      "Ara-1-pcnB-snp"      "Ara-1-pflC-del-d"   
+[16] "Ara-1-rpsM-snp"      "Ara-1-spoT-snp"      "Ara-1-topA-snp"     
+[19] "Ara-1-ybaL-ins-d"    "Ara-1-yedW-yedX-snp" "Ara-1-yegI-snp"     
+[22] "Ara-1-yghJ-snp"      "Ara-1-yhdG-fis-snp" 
+
+Slot "frequency":
+[1] 1
+
+[1] 19000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"     "Ara-1-arcB-snp"     "Ara-1-dhaM-snp"    
+ [4] "Ara-1-ebgR-snp"     "Ara-1-hslU-snp"     "Ara-1-iclR-snp"    
+ [7] "Ara-1-infB-snp"     "Ara-1-malT-snp"     "Ara-1-mrdA-snp"    
+[10] "Ara-1-nadR..2-snp"  "Ara-1-nagC-snp"     "Ara-1-pcnB-snp"    
+[13] "Ara-1-rpsM-snp"     "Ara-1-spoT-snp"     "Ara-1-topA-snp"    
+[16] "Ara-1-ybaL-ins-d"   "Ara-1-yegI-snp"     "Ara-1-yghJ-snp"    
+[19] "Ara-1-yhdG-fis-snp"
+
+Slot "frequency":
+[1] 1
+
+[1] 18500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"      "Ara-1-arcB-snp"      "Ara-1-dhaM-snp"     
+ [4] "Ara-1-ebgR-snp"      "Ara-1-glpE-snp"      "Ara-1-gltB-del-d"   
+ [7] "Ara-1-hslU-snp"      "Ara-1-iclR-snp"      "Ara-1-infB-snp"     
+[10] "Ara-1-malT-snp"      "Ara-1-mrdA-snp"      "Ara-1-nadR..2-snp"  
+[13] "Ara-1-nagC-snp"      "Ara-1-pcnB-snp"      "Ara-1-pflC-del-d"   
+[16] "Ara-1-rpsM-snp"      "Ara-1-spoT-snp"      "Ara-1-topA-snp"     
+[19] "Ara-1-ybaL-ins-d"    "Ara-1-yedW-yedX-snp" "Ara-1-yegI-snp"     
+[22] "Ara-1-yghJ-snp"      "Ara-1-yhdG-fis-snp" 
+
+Slot "frequency":
+[1] 1
+
+[1] 18000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"      "Ara-1-arcB-snp"      "Ara-1-dhaM-snp"     
+ [4] "Ara-1-ebgR-snp"      "Ara-1-glpE-snp"      "Ara-1-gltB-del-d"   
+ [7] "Ara-1-hslU-snp"      "Ara-1-iclR-snp"      "Ara-1-infB-snp"     
+[10] "Ara-1-malT-snp"      "Ara-1-mrdA-snp"      "Ara-1-nadR..2-snp"  
+[13] "Ara-1-nagC-snp"      "Ara-1-pcnB-snp"      "Ara-1-pflC-del-d"   
+[16] "Ara-1-rpsM-snp"      "Ara-1-spoT-snp"      "Ara-1-topA-snp"     
+[19] "Ara-1-ybaL-ins-d"    "Ara-1-yedW-yedX-snp" "Ara-1-yghJ-snp"     
+[22] "Ara-1-yhdG-fis-snp" 
+
+Slot "frequency":
+[1] 1
+
+[1] 17500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"      "Ara-1-arcB-snp"      "Ara-1-dhaM-snp"     
+ [4] "Ara-1-ebgR-snp"      "Ara-1-glpE-snp"      "Ara-1-gltB-del-d"   
+ [7] "Ara-1-hslU-snp"      "Ara-1-iclR-snp"      "Ara-1-infB-snp"     
+[10] "Ara-1-malT-snp"      "Ara-1-mrdA-snp"      "Ara-1-nadR..2-snp"  
+[13] "Ara-1-nagC-snp"      "Ara-1-pcnB-snp"      "Ara-1-pflC-del-d"   
+[16] "Ara-1-rpsM-snp"      "Ara-1-spoT-snp"      "Ara-1-topA-snp"     
+[19] "Ara-1-ybaL-ins-d"    "Ara-1-yedW-yedX-snp" "Ara-1-yegI-snp"     
+[22] "Ara-1-yghJ-snp"      "Ara-1-yhdG-fis-snp" 
+
+Slot "frequency":
+[1] 1
+
+[1] 17000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"      "Ara-1-arcB-snp"      "Ara-1-dhaM-snp"     
+ [4] "Ara-1-ebgR-snp"      "Ara-1-glpE-snp"      "Ara-1-gltB-del-d"   
+ [7] "Ara-1-hslU-snp"      "Ara-1-iclR-snp"      "Ara-1-infB-snp"     
+[10] "Ara-1-malT-snp"      "Ara-1-mrdA-snp"      "Ara-1-nadR..2-snp"  
+[13] "Ara-1-nagC-snp"      "Ara-1-pcnB-snp"      "Ara-1-pflC-del-d"   
+[16] "Ara-1-rpsM-snp"      "Ara-1-spoT-snp"      "Ara-1-topA-snp"     
+[19] "Ara-1-ybaL-ins-d"    "Ara-1-yedW-yedX-snp" "Ara-1-yegI-snp"     
+[22] "Ara-1-yghJ-snp"      "Ara-1-yhdG-fis-snp" 
+
+Slot "frequency":
+[1] 1
+
+[1] 16500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"      "Ara-1-arcB-snp"      "Ara-1-dhaM-snp"     
+ [4] "Ara-1-ebgR-snp"      "Ara-1-glpE-snp"      "Ara-1-gltB-del-d"   
+ [7] "Ara-1-hslU-snp"      "Ara-1-iclR-snp"      "Ara-1-infB-snp"     
+[10] "Ara-1-malT-snp"      "Ara-1-mrdA-snp"      "Ara-1-nadR..2-snp"  
+[13] "Ara-1-nagC-snp"      "Ara-1-pcnB-snp"      "Ara-1-pflC-del-d"   
+[16] "Ara-1-rpsM-snp"      "Ara-1-spoT-snp"      "Ara-1-topA-snp"     
+[19] "Ara-1-ybaL-ins-d"    "Ara-1-yedW-yedX-snp" "Ara-1-yegI-snp"     
+[22] "Ara-1-yghJ-snp"      "Ara-1-yhdG-fis-snp" 
+
+Slot "frequency":
+[1] 1
+
+[1] 16000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"      "Ara-1-arcB-snp"      "Ara-1-dhaM-snp"     
+ [4] "Ara-1-ebgR-snp"      "Ara-1-gltB-del-d"    "Ara-1-hslU-snp"     
+ [7] "Ara-1-iclR-snp"      "Ara-1-infB-snp"      "Ara-1-malT-snp"     
+[10] "Ara-1-mrdA-snp"      "Ara-1-nadR..2-snp"   "Ara-1-nagC-snp"     
+[13] "Ara-1-pcnB-snp"      "Ara-1-pflC-del-d"    "Ara-1-rpsM-snp"     
+[16] "Ara-1-spoT-snp"      "Ara-1-topA-snp"      "Ara-1-ybaL-ins-d"   
+[19] "Ara-1-yedW-yedX-snp" "Ara-1-yegI-snp"      "Ara-1-yghJ-snp"     
+[22] "Ara-1-yhdG-fis-snp" 
+
+Slot "frequency":
+[1] 1
+
+[1] 15500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"      "Ara-1-arcB-snp"      "Ara-1-dhaM-snp"     
+ [4] "Ara-1-ebgR-snp"      "Ara-1-gltB-del-d"    "Ara-1-hslU-snp"     
+ [7] "Ara-1-iclR-snp"      "Ara-1-infB-snp"      "Ara-1-malT-snp"     
+[10] "Ara-1-mrdA-snp"      "Ara-1-nadR..2-snp"   "Ara-1-nagC-snp"     
+[13] "Ara-1-pcnB-snp"      "Ara-1-pflC-del-d"    "Ara-1-rpsM-snp"     
+[16] "Ara-1-spoT-snp"      "Ara-1-topA-snp"      "Ara-1-ybaL-ins-d"   
+[19] "Ara-1-yedW-yedX-snp" "Ara-1-yegI-snp"      "Ara-1-yghJ-snp"     
+[22] "Ara-1-yhdG-fis-snp" 
+
+Slot "frequency":
+[1] 1
+
+[1] 15000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"      "Ara-1-arcB-snp"      "Ara-1-dhaM-snp"     
+ [4] "Ara-1-ebgR-snp"      "Ara-1-gltB-del-d"    "Ara-1-hslU-snp"     
+ [7] "Ara-1-iclR-snp"      "Ara-1-infB-snp"      "Ara-1-malT-snp"     
+[10] "Ara-1-mrdA-snp"      "Ara-1-nadR..2-snp"   "Ara-1-nagC-snp"     
+[13] "Ara-1-pcnB-snp"      "Ara-1-pflC-del-d"    "Ara-1-rpsM-snp"     
+[16] "Ara-1-spoT-snp"      "Ara-1-topA-snp"      "Ara-1-ybaL-ins-d"   
+[19] "Ara-1-yedW-yedX-snp" "Ara-1-yegI-snp"      "Ara-1-yghJ-snp"     
+[22] "Ara-1-yhdG-fis-snp" 
+
+Slot "frequency":
+[1] 1
+
+[1] 14500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"      "Ara-1-arcB-snp"      "Ara-1-dhaM-snp"     
+ [4] "Ara-1-ebgR-snp"      "Ara-1-gltB-del-d"    "Ara-1-hslU-snp"     
+ [7] "Ara-1-infB-snp"      "Ara-1-malT-snp"      "Ara-1-mrdA-snp"     
+[10] "Ara-1-nadR..2-snp"   "Ara-1-nagC-snp"      "Ara-1-pcnB-snp"     
+[13] "Ara-1-pflC-del-d"    "Ara-1-rpsM-snp"      "Ara-1-spoT-snp"     
+[16] "Ara-1-topA-snp"      "Ara-1-ybaL-ins-d"    "Ara-1-yedW-yedX-snp"
+[19] "Ara-1-yegI-snp"      "Ara-1-yghJ-snp"      "Ara-1-yhdG-fis-snp" 
+
+Slot "frequency":
+[1] 1
+
+[1] 14000
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"      "Ara-1-gltB-del-d"    "Ara-1-hslU-snp"     
+ [4] "Ara-1-infB-snp"      "Ara-1-malT-snp"      "Ara-1-mrdA-snp"     
+ [7] "Ara-1-nadR..2-snp"   "Ara-1-nagC-snp"      "Ara-1-pflC-del-d"   
+[10] "Ara-1-rpsM-snp"      "Ara-1-spoT-snp"      "Ara-1-topA-snp"     
+[13] "Ara-1-ybaL-ins-d"    "Ara-1-yedW-yedX-snp" "Ara-1-yegI-snp"     
+[16] "Ara-1-yghJ-snp"      "Ara-1-yhdG-fis-snp" 
+
+Slot "frequency":
+[1] 1
+
+[1] 13500
+An object of class “Genotype”
+Slot "alleles":
+ [1] "Ara-1-araJ-snp"      "Ara-1-gltB-del-d"    "Ara-1-hslU-snp"     
+ [4] "Ara-1-infB-snp"      "Ara-1-malT-snp"      "Ara-1-mrdA-snp"     
+ [7] "Ara-1-nadR..2-snp"   "Ara-1-nagC-snp"      "Ara-1-pflC-del-d"   
+[10] "Ara-1-rpsM-snp"      "Ara-1-spoT-snp"      "Ara-1-topA-snp"     
+[13] "Ara-1-ybaL-ins-d"    "Ara-1-yedW-yedX-snp" "Ara-1-yegI-snp"     
+[16] "Ara-1-yghJ-snp"      "Ara-1-yhdG-fis-snp" 
+
+Slot "frequency":
+[1] 1
+
+[1] 13000
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-hslU-snp"   "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"  
+[5] "Ara-1-nagC-snp"   "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d"
+[9] "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 12000
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-hslU-snp"   "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"  
+[5] "Ara-1-nagC-snp"   "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d"
+[9] "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 11600
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"   "Ara-1-nagC-snp"  
+[5] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 11000
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"   "Ara-1-nagC-snp"  
+[5] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 10500
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"   "Ara-1-nagC-snp"  
+[5] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 10000
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"   "Ara-1-nagC-snp"  
+[5] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 9500
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"   "Ara-1-nagC-snp"  
+[5] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 9000
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"   "Ara-1-nagC-snp"  
+[5] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 8500
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"   "Ara-1-nagC-snp"  
+[5] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 8000
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"   "Ara-1-nagC-snp"  
+[5] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 7500
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"   "Ara-1-nagC-snp"  
+[5] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 7000
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"   "Ara-1-nagC-snp"  
+[5] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 6500
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"   "Ara-1-nagC-snp"  
+[5] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 5500
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"   "Ara-1-nagC-snp"  
+[5] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 5000
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-infB-snp"   "Ara-1-malT-snp"   "Ara-1-mrdA-snp"   "Ara-1-nagC-snp"  
+[5] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 4500
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 4000
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 3500
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 3000
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-spoT-snp"   "Ara-1-topA-snp"   "Ara-1-ybaL-ins-d" "Ara-1-yegI-snp"  
+
+Slot "frequency":
+[1] 1
+
+[1] 2500
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-spoT-snp" "Ara-1-topA-snp" "Ara-1-yegI-snp"
+
+Slot "frequency":
+[1] 1
+
+[1] 2000
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-spoT-snp" "Ara-1-topA-snp"
+
+Slot "frequency":
+[1] 1
+
+[1] 1500
+An object of class “Genotype”
+Slot "alleles":
+[1] "Ara-1-spoT-snp" "Ara-1-topA-snp"
+
+Slot "frequency":
+[1] 1
+
+[1] 1000
+An object of class “Genotype”
+Slot "alleles":
+character(0)
+
+Slot "frequency":
+[1] 1
+
+[1] 500
+An object of class “Genotype”
+Slot "alleles":
+character(0)
+
+Slot "frequency":
+[1] 1
+
+> 

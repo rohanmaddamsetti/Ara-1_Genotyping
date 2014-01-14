@@ -1,0 +1,118 @@
+##CalibrateAndGraphSNPs_final.R by Rohan Maddamsetti
+##This is the final, polished script that analyzes all three mixed pop. datasets.
+##CalibrateAndGraphClones.R should be run before this script is run (for the code that
+##compares clone and mixed. pop genotyping datasets).
+
+##import functions from my library.
+source("GenotypingLibrary.R")
+
+##This is the first set of calibration standards.
+first.calibration.standards <- read.table("input/091130_VeraCode_A-1_assay.tab",sep="\t",header=T)
+##This is the first run of the mixed population data.
+first.plate.data <- read.table("input/Plate_1_FinalReport_no_header.txt",sep="\t",header=T)
+##This is the second set of calibration standards.
+second.calibration.standards <- read.table("input/100823_VeraCode_A-1_assay3.tab",sep="\t",header=T)
+## This is the second run of the mixed population data.
+second.plate.data <- read.table("input/Plate_3_FinalReport_no_header.txt",sep="\t",header=T)
+## This is the third set of calibration standards.
+third.calibration.standards <- read.table("input/110208_VeraCode_A-1_assay4.tab",sep="\t",header=T)
+## This is the third run of the mixed population data.
+third.plate.data <- read.table("input/Plate_4_FinalReport_no_header.txt",sep="\t",header=T)
+
+## Remove bad samples from the data and calibration standards:
+## IMPORTANT! These datapoints are anomalous, but they may not actually be bad!
+## Caution must be exercised in assuming that these are bad data.
+first.bad.ones <- c("Lenski Plate 1_R005_C011")
+first.calibration.standards <- removeBadStandards(first.bad.ones, first.calibration.standards)
+first.plate.data <- removeBadData(first.bad.ones, first.plate.data)
+
+## Remove the 21K datapoint from the second mixed pop. run.
+second.bad.ones <- c("LTEE Genotyping II_R003_C002")
+second.calibration.standards <- removeBadStandards(second.bad.ones, second.calibration.standards)
+second.plate.data <- removeBadData(second.bad.ones, second.plate.data)
+
+## Remove the 24.5K datapoint from the third mixed pop. run.
+third.bad.ones <- c("Lenski Plate 4_R008_C008")
+third.calibration.standards <- removeBadStandards(third.bad.ones, third.calibration.standards)
+third.plate.data <- removeBadData(third.bad.ones, third.plate.data)
+
+## Remove rearrangements from the plates.
+first.plate.data <- removeRearrangements(first.plate.data)
+second.plate.data <- removeRearrangements(second.plate.data)
+third.plate.data <- removeRearrangements(third.plate.data)
+
+## Remove all bad SNP Assays, as listed in BadSNPAssays.txt.
+first.plate.data <- removeBadSNPAssays(first.plate.data)
+second.plate.data <- removeBadSNPAssays(second.plate.data)
+third.plate.data <- removeBadSNPAssays(third.plate.data)
+
+##Now, weight the allele frequencies in the mixed clone data in the calibration
+##standards by the ratio of 8593A DNA in the mixed clone DNA.
+##This factor was calculated from flow cytometry data.
+scaled.first.calibration.standards <- scaleMixedClones(first.calibration.standards, weight=1.88)
+scaled.second.calibration.standards <- scaleMixedClones(second.calibration.standards, weight=1.88)
+scaled.third.calibration.standards <- scaleMixedClones(third.calibration.standards, weight=1.88)
+## Now calibrate the data based on the standards.
+first.calibrated <- calibrateSNPs(first.plate.data, scaled.first.calibration.standards)
+second.calibrated <- calibrateSNPs(second.plate.data, scaled.second.calibration.standards)
+third.calibrated <- calibrateSNPs(third.plate.data, scaled.third.calibration.standards)
+all.calibrated <- rbind(first.calibrated,second.calibrated,third.calibrated)
+averaged.plates <- averageRelevantMixedPlateData(all.calibrated)
+final.data <- averaged.plates
+
+##Plot the pyrosequencing results that Jeff Barrick got.
+pyrosequencing.data <- read.csv("/Users/Rohandinho/Desktop/Projects/Ara-1_Genotyping/veracode/input/PyrosequencingResultsSummary.csv", header=T)
+plotPyrosequencingResults(pyrosequencing.data,
+                          outfile="/Users/Rohandinho/Desktop/pyroPlot.pdf")
+##Plot the same results, but from the Veracode Genotyping data.
+makeGenotypingPyroPlot(final.data, outfile="/Users/Rohandinho/Desktop/GenotypingPyroPlot.pdf")
+
+##Make a scatterplot comparing the relevant mixed pop. genotyping data to
+##the pyrosequencing results.
+compareSequencingToGenotyping(final.data,pyrosequencing.data,
+                              outfile="/Users/Rohandinho/Desktop/pyroCompPlot.pdf")
+
+##Test code for makeTimeHistogram.
+time.hist1 <- makeTimeHistogram(final.data)
+time.hist2 <- makeTimeHistogram(final.data, omitfirst2K=TRUE)
+#write.csv(time.hist1, file="/Users/Rohandinho/Desktop/with2K.csv")
+#write.csv(time.hist2, file="/Users/Rohandinho/Desktop/without2K.csv")
+
+## Make movie graphs.
+## First, I need to divide up the data into fixations and non-fixations.
+## Both calibrated and non-calibrated data will be graphed.
+##Save the movie graphs as a set of *.png files to be stitched together into a movie.
+#fixation.output <- "/Users/Rohandinho/Desktop/test/test%03d.png"
+fixation.output <- "/Users/Rohandinho/Desktop/fixation_movie.pdf"
+plotMovie(final.data, fixation.output, use.theta=FALSE, fixations=TRUE)
+nonfixation.output <- "/Users/Rohandinho/Desktop/nonfixation_movie.pdf"
+plotMovie(final.data, nonfixation.output, use.theta=FALSE, fixations=FALSE)
+
+##Compare 10K clone allele frequencies with the mixed 10K allele frequencies.
+clone.ten.k.freqs <- read.csv("10K_allele_frequencies.csv",header=TRUE)
+regression.10K <- compareCloneAndMixedFreqs(clone.ten.k.freqs, final.data, gen=10000,
+                          outfile="/Users/Rohandinho/Desktop/10KClone-Mixed-Comparison.pdf")
+
+##Compare 7.5K clone allele frequencies with the mixed 7.5K allele frequencies.
+clone.7.5k.freqs <- read.csv("7.5K_allele_frequencies.csv", header=FALSE)
+regression.7.5k <- compareCloneAndMixedFreqs(clone.7.5k.freqs, final.data, gen=7500,
+                          outfile="/Users/Rohandinho/Desktop/7.5KClone-Mixed-Comparison.pdf")
+
+##Superimpose graphs from all mixed plate datasets.
+#compareMixedPopDatasets(list(first.calibrated,second.calibrated,third.calibrated))
+
+## Graph each dataset.
+#graphAllSNPs(first.calibrated, "/Users/Rohandinho/Desktop/fudge1.pdf")
+#graphAllSNPs(second.calibrated, "/Users/Rohandinho/Desktop/fudge2.pdf")
+#graphAllSNPs(third.calibrated, "/Users/Rohandinho/Desktop/fudge3.pdf")
+#graphAllSNPs(final.data, "/Users/Rohandinho/Desktop/finalfudge.pdf")
+
+## Make rough input file for bpopsim Muller Plot code.
+## The file created by this function needs to be post-processed by a perl script
+## named "cleanMuller.pl."
+#makeMullerplotInput(final.data, outfile="rough_mullerinput.dat")
+
+## Make a scatterplot comparing allele frequencies as measured in previous
+## mixed pop. sequencing (Jeff's Cold Spring Harbor paper results).
+mixed.pop.sequencing <- read.csv("input/MixedPopSequencingComparison/FinalMixedPopSequencingSNPs.csv", header=T)
+compareCSHresultsToGenotyping(final.data, mixed.pop.sequencing)
