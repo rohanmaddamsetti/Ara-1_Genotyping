@@ -56,18 +56,28 @@ makeHeatmap <- function(genotype.table, control.wells,  path="./", filename.pref
   ##initialize this matrix.
   new.order.genotype.matrix <- genotype.matrix
   if (filename.prefix == "7.5K_") {
-    ##This manually reorders the samples of the 7.5K samples, so the rows are more like the 10K heatmap.
-    new.order <- c(row.inds[25:57], row.inds[72:90], row.inds[58:71], row.inds[1:24])
+
+    ## reorder rows (samples) to align well with Steve's Muller Plot.
+    new.order <- c(rev(row.inds[1:24]), row.inds[25:57], row.inds[72:90], row.inds[58:71])
     new.order.names <- sapply(new.order, function (x) row.names[x])
-    new.order.genotype.matrix <- t(cbind(sapply(new.order.names, function (x) genotype.matrix[x,])))
+    new.order.genotype.matrix <- t(cbind(sapply(new.order.names, function (x) new.order.genotype.matrix[x,])))
+
+    ## reorder columns (mutations) to align well with Steve's Muller Plot.
+    new.col.order <- as.integer(c(10,16,14,13,11,17,15,12,7,6,5,4,3,2,1,9,8))
+    new.col.order.names <- sapply(new.col.order, function(x) col.names[x])
+    new.order.genotype.matrix <- cbind(sapply(as.vector(new.col.order.names), function (x) new.order.genotype.matrix[,x]))
+    
   }
   else { ##For 10K Clones--manually reorder clones with atoS and nuoG mutations.
-    new.order <- c(row.inds[1:8],row.inds[9:90])
+    new.order <- rev(c(row.inds[1:8],row.inds[9:90]))
     new.order.names <- sapply(new.order, function (x) row.names[x])
     new.order.genotype.matrix <- t(cbind(sapply(new.order.names, function (x) genotype.matrix[x,])))
-    ##put atoS and nuoG snps further down in the heatmap for readability.
-    new.col.order <- c(col.inds[3:14],col.inds[2],col.inds[1],col.inds[15:25])
+    ## reorder columns (mutations) to align well with Steve's Muller Plot.
+    new.col.order <- as.integer(c(18,24,22,21,19,25,23,20,seq(14,3),17,16,15,1,2))
+    #new.col.order <- rev(c(col.inds[3:14], col.inds[2], col.inds[1], col.inds[15:25]))
+
     new.col.order.names <- sapply(new.col.order, function (x) col.names[x])
+
     new.order.genotype.matrix <- cbind(sapply(as.vector(new.col.order.names), function (x) new.order.genotype.matrix[,x]))
 
 }
