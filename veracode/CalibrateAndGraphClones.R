@@ -63,7 +63,8 @@ makeHeatmap <- function(genotype.table, control.wells,  path="./", filename.pref
     new.order.genotype.matrix <- t(cbind(sapply(new.order.names, function (x) new.order.genotype.matrix[x,])))
 
     ## reorder columns (mutations) to align well with Steve's Muller Plot.
-    new.col.order <- as.integer(c(10,16,14,13,11,17,15,12,7,6,5,4,3,2,1,9,8))
+    new.col.order <- as.integer(c(10,16,14,13,11,17,15,12,9,8,7,6,5,4,3,2,1))
+#    new.col.order <- as.integer(c(10,16,14,13,11,17,15,12,7,6,5,4,3,2,1,9,8))
     new.col.order.names <- sapply(new.col.order, function(x) col.names[x])
     new.order.genotype.matrix <- cbind(sapply(as.vector(new.col.order.names), function (x) new.order.genotype.matrix[,x]))
     
@@ -73,7 +74,8 @@ makeHeatmap <- function(genotype.table, control.wells,  path="./", filename.pref
     new.order.names <- sapply(new.order, function (x) row.names[x])
     new.order.genotype.matrix <- t(cbind(sapply(new.order.names, function (x) genotype.matrix[x,])))
     ## reorder columns (mutations) to align well with Steve's Muller Plot.
-    new.col.order <- as.integer(c(18,24,22,21,19,25,23,20,seq(14,3),17,16,15,1,2))
+    new.col.order <- as.integer(c(18,24,22,21,19,25,23,20,17,16,15,2,1,seq(14,3)))
+#    new.col.order <- as.integer(c(18,24,22,21,19,25,23,20,seq(14,3),17,16,15,1,2))
     #new.col.order <- rev(c(col.inds[3:14], col.inds[2], col.inds[1], col.inds[15:25]))
 
     new.col.order.names <- sapply(new.col.order, function (x) col.names[x])

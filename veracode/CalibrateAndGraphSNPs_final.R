@@ -85,6 +85,8 @@ plotsForMuller(final.data, fixation.output, use.theta=FALSE, fixations=TRUE, wid
 nonfixation.output <- "/Users/Rohandinho/Desktop/MullerNonFixations.pdf"
 plotsForMuller(final.data, nonfixation.output, use.theta=FALSE, fixations=FALSE, width.parameter=6, height.parameter=3)
 
+#plotsForMuller(final.data, fixation.output, use.theta=TRUE, fixations=TRUE, width.parameter=6, height.parameter=3)
+
 ######## Supplementary Figures.
 
 ##Plot the pyrosequencing results that Jeff Barrick got.
