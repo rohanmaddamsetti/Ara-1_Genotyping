@@ -50,16 +50,21 @@ third.plate.data <- removeBadSNPAssays(third.plate.data)
 ##Now, weight the allele frequencies in the mixed clone data in the calibration
 ##standards by the ratio of 8593A DNA in the mixed clone DNA.
 ##This factor was calculated from flow cytometry data.
-scaled.first.calibration.standards <- scaleMixedClones(first.calibration.standards, weight=1.88)
-scaled.second.calibration.standards <- scaleMixedClones(second.calibration.standards, weight=1.88)
-scaled.third.calibration.standards <- scaleMixedClones(third.calibration.standards, weight=1.88)
+scaled.first.calibration.standards <- scaleMixedClones(first.calibration.standards, weight=1.67)
+scaled.second.calibration.standards <- scaleMixedClones(second.calibration.standards, weight=1.67)
+scaled.third.calibration.standards <- scaleMixedClones(third.calibration.standards, weight=1.67)
 ## Now calibrate the data based on the standards.
 first.calibrated <- calibrateSNPs(first.plate.data, scaled.first.calibration.standards)
 second.calibrated <- calibrateSNPs(second.plate.data, scaled.second.calibration.standards)
 third.calibrated <- calibrateSNPs(third.plate.data, scaled.third.calibration.standards)
 all.calibrated <- rbind(first.calibrated,second.calibrated,third.calibrated)
 averaged.plates <- averageRelevantMixedPlateData(all.calibrated)
-final.data <- averaged.plates
+almost.final.data1 <- averaged.plates
+## remove mutT and mutations with little data from the dataset. 
+almost.final.data2 <- subset(almost.final.data1, !almost.final.data1$SNP.Name %in% c("Ara-1-mutT-ins-u", "Ara-1-tdcR-yhaB-snp", "Ara-1-mgrB-yobH-snp", "Ara-1-x-thiC-snp", "Ara-1-uvrB-del-d", "Ara-1-yaaH-snp", "Ara-1-ycbX-ycbY-snp", "Ara-1-nirC-snp", "Ara-1-iclR..2-snp", "Ara-1-ycgH-snp"))
+## cut the data to 20,000 generations.
+final.data <- subset(almost.final.data2, !almost.final.data2$generation %in% c(20500,21000,21500,22000,22500,23000,23500,24000,24500,25000,25500,26000,26500,27000,27500,28000,28500,29000,29500,30000))
+
 
 #################################################################################
 
@@ -71,7 +76,7 @@ final.data <- averaged.plates
 
 ## First, I need to divide up the data into fixations and non-fixations.
 ## Both calibrated and non-calibrated data will be graphed.
-## Save the movie graphs as a set of *.png files for post-processing with
+## Save the movie graphs as a set of *.svg files for post-processing with
 ## Adobe Illustrator.
 
 ## Adjustable parameters for plotsForMuller:
@@ -80,14 +85,19 @@ final.data <- averaged.plates
 ## 3) with or without error bars
 ## 4) with or without gene name.
 
-fixation.output <- "/Users/Rohandinho/Desktop/MullerFixations.pdf"
-plotsForMuller(final.data, fixation.output, use.theta=FALSE, fixations=TRUE, width.parameter=6, height.parameter=3)
-nonfixation.output <- "/Users/Rohandinho/Desktop/MullerNonFixations.pdf"
-plotsForMuller(final.data, nonfixation.output, use.theta=FALSE, fixations=FALSE, width.parameter=6, height.parameter=3)
+all.output <- "/Users/Rohandinho/Desktop/MullerMutations.pdf"
+plotsForMuller(final.data, all.output, use.theta=FALSE, width.parameter=6, height.parameter=3,bottomline=TRUE)
 
-#plotsForMuller(final.data, fixation.output, use.theta=TRUE, fixations=TRUE, width.parameter=6, height.parameter=3)
+## Make series without a bottom line for Figure S1.
+
+S1.output <- "/Users/Rohandinho/Desktop/S1MullerMutations.pdf"
+plotsForMuller(final.data, S1.output, use.theta=FALSE, width.parameter=6, height.parameter=3,bottomline=FALSE)
 
 ######## Supplementary Figures.
+
+## Figure S4: Example graph of effect of calibration to fix calibration.
+S4.output <- "/Users/Rohandinho/Desktop/FigureS4.pdf"
+graphS4(final.data, S4.output)
 
 ##Plot the pyrosequencing results that Jeff Barrick got.
 #pyrosequencing.data <- read.csv("/Users/Rohandinho/Desktop/Projects/Ara-1_Genotyping/veracode/input/PyrosequencingResultsSummary.csv", header=T)

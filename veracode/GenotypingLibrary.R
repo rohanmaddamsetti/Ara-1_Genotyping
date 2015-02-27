@@ -4,6 +4,53 @@
 library(ggplot2)
 library(reshape2)
 
+#############
+# Multiple plot function from Cookbook for R.
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
 #############FUNCTIONS FOR MIXED POPULATION DATA.
 
 ##function to superimpose error bars on graph.
@@ -189,9 +236,12 @@ calibrateSNPs <- function(the.plate.data,the.calibration.standards) {
     ancestor.ID <- getStandardSampleID(the.calibration.standards,0)
     twenty.k.clone.ID <-getStandardSampleID(the.calibration.standards,20000)
     forty.k.clone.ID <- getStandardSampleID(the.calibration.standards,40000)
-    ancestor.theta <- subset(illumina.snp.data,Sample.ID==ancestor.ID,Theta)
-    twenty.k.theta <- subset(illumina.snp.data,Sample.ID==twenty.k.clone.ID,Theta)
-    forty.k.theta <- subset(illumina.snp.data,Sample.ID==forty.k.clone.ID,Theta)
+    ancestor.b.allele.freq <- subset(illumina.snp.data,Sample.ID==ancestor.ID,B.Allele.Freq)
+    twenty.k.b.allele.freq <- subset(illumina.snp.data,Sample.ID==twenty.k.clone.ID,B.Allele.Freq)
+    forty.k.b.allele.freq <- subset(illumina.snp.data,Sample.ID==forty.k.clone.ID,B.Allele.Freq)
+    
+
+    
     calibrators <- subset(the.calibration.standards,M.or.C=="MC")[[dot.snp.name]]
     rev <- F #default: don't reverse.
     do.calibration <- T #default: do calibration.
@@ -226,22 +276,22 @@ calibrateSNPs <- function(the.plate.data,the.calibration.standards) {
       print("The standards for this SNP are insufficient.")
       print(snp.standards)
       do.calibration <- F
-      ##Reverse if measured.theta is ~1 in the ancestor.
-      try({if(ancestor.theta > 0.9) rev <- T},silent=T)
+      ##Reverse if measured b.allele.freq is ~1 in the ancestor.
+      try({if(ancestor.b.allele.freq > 0.9) rev <- T},silent=T)
     }
     if(rev) {
       measured.theta <- sapply(measured.theta,function(x) 1-x)
       measured.b.allele.freq <- sapply(measured.b.allele.freq,function(x) 1-x)
-      if (is.na(twenty.k.theta)) twenty.k.theta <- 1
-      if (is.na(forty.k.theta)) forty.k.theta <- 1
-      twenty.k.theta <- 1 - twenty.k.theta
-      forty.k.theta <- 1 - forty.k.theta
+      if (is.na(twenty.k.b.allele.freq)) twenty.k.b.allele.freq <- 1
+      if (is.na(forty.k.b.allele.freq)) forty.k.b.allele.freq <- 1
+      twenty.k.b.allele.freq <- 1 - twenty.k.b.allele.freq
+      forty.k.b.allele.freq <- 1 - forty.k.b.allele.freq
     }
 
     ## Allele freq. must be close to 1 in 20K clone or 40K clone.
-    if (length(twenty.k.theta[,1]) == 0 || is.na(twenty.k.theta)) twenty.k.theta <- 0 
-    if (length(forty.k.theta[,1]) == 0 || is.na(forty.k.theta)) forty.k.theta <- 0
-    if(twenty.k.theta < 0.9 || forty.k.theta < 0.9){ ##should be close to one.
+    if (length(twenty.k.b.allele.freq[,1]) == 0 || is.na(twenty.k.b.allele.freq)) twenty.k.b.allele.freq <- 0 
+    if (length(forty.k.b.allele.freq[,1]) == 0 || is.na(forty.k.b.allele.freq)) forty.k.b.allele.freq <- 0
+    if(twenty.k.b.allele.freq < 0.9 || forty.k.b.allele.freq < 0.9){ ##should be close to one.
       do.calibration <- F
     }
     
@@ -418,6 +468,41 @@ graphAllSNPs <- function(the.calibrated.data, output.file){
   dev.off()
 }
 
+############################################################
+
+## rewrite of SNPGraphs to make show an example of the effect of the calibration.
+
+graphS4 <- function(the.data, output){
+  pdf(output, useDingbats=FALSE, height=7, width=14)
+
+  ## only fixations were calibrated (because in 20K clone).
+  fixations <- partitionSNPs(the.data, use.theta=FALSE, get.fixations=TRUE)
+  for (snp in fixations) {
+    print(snp)
+    illumina.snp.data <- subset(the.data, SNP.Name == snp)
+
+    uncalibrated.plot <- ggplot(illumina.snp.data, aes(x=actual,y=measured.b.allele.freq)) + geom_point() + geom_abline(intercept=0,slope=1) + ggtitle(snp) +
+      xlab("Actual frequency") + ylab("Measured frequency") +
+        theme_bw() + theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(),
+                           axis.title.x=element_text(size=20), axis.title.y=element_text(size=20),
+                           axis.text.x=element_text(size=16), axis.text.y=element_text(size=16),
+                           plot.title=element_text(size=24))
+
+    calibrated.plot <- ggplot(illumina.snp.data, aes(x=actual,y=predicted.b.allele.freq.fit)) + geom_point() + geom_abline(intercept=0,slope=1) + ggtitle(snp) +
+      xlab("Actual frequency") + ylab("Calibrated frequency") +
+        theme_bw() + theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank(),
+                           axis.title.x=element_text(size=20), axis.title.y=element_text(size=20),
+                           axis.text.x=element_text(size=16), axis.text.y=element_text(size=16),
+                           plot.title=element_text(size=24))
+
+    multiplot(uncalibrated.plot, calibrated.plot, cols=2)
+  }
+  dev.off()
+}
+
+
+
+
 ##########################################
 ##FUNCTIONS FOR CLONE DATA
 ##########################################
@@ -559,23 +644,23 @@ countAlleleFrequencies <- function(the.genotype.table){
 ##parameter is set to false.
 ##These data must already have been calibrated, etc.
 partitionSNPs <- function(the.final.data, use.theta=FALSE, get.fixations=TRUE) {
-  ##fixations should have theta close to 1 in generation 30000.
-  thirtyK.data <- subset(the.final.data, generation==30000)
+  ##fixations should have theta close to 1 in generation 20000.
+  twentyK.data <- subset(the.final.data, generation==20000)
   if (get.fixations) {
     if (use.theta) {
-      return(unique(subset(thirtyK.data$SNP.Name,                                    
-                           sapply(thirtyK.data$measured.theta, function (x) if (x > 0.9) TRUE else FALSE))))
+      return(unique(subset(twentyK.data$SNP.Name,                                    
+                           sapply(twentyK.data$measured.theta, function (x) if (x > 0.9) TRUE else FALSE))))
     } else {
-      return(unique(subset(thirtyK.data$SNP.Name,                                    
-                           sapply(thirtyK.data$measured.b.allele.freq, function (x) if (x > 0.9) TRUE else FALSE))))
+      return(unique(subset(twentyK.data$SNP.Name,                                    
+                           sapply(twentyK.data$measured.b.allele.freq, function (x) if (x > 0.9) TRUE else FALSE))))
     }
   } else {
     if (use.theta) {
-      return(unique(subset(thirtyK.data$SNP.Name,                                    
-                           sapply(thirtyK.data$measured.theta, function (x) if (x > 0.9) FALSE else TRUE))))   
+      return(unique(subset(twentyK.data$SNP.Name,                                    
+                           sapply(twentyK.data$measured.theta, function (x) if (x > 0.9) FALSE else TRUE))))   
     } else {
-      return(unique(subset(thirtyK.data$SNP.Name,                                    
-                           sapply(thirtyK.data$measured.b.allele.freq, function (x) if (x > 0.9) FALSE else TRUE))))
+      return(unique(subset(twentyK.data$SNP.Name,                                    
+                           sapply(twentyK.data$measured.b.allele.freq, function (x) if (x > 0.9) FALSE else TRUE))))
     }
   }
 }
@@ -669,24 +754,28 @@ orderSNPs <- function(the.final.data, fixations=TRUE) {
     return(names(sort(unlist(generation.hash))))
 }
 
-## This function makes plots for Steve to post-process into a Muller Plot with
-## Illustrator.
 
+## This function makes an ordered list of ggplot objects (set by me)
+## These objects can be used to make plots for Steve to post-process
+## into a Muller Plot with Illustrator, or used to make Figure S1.
+## Parameters to make Figure S1: bottomline = FALSE
+##
 ## Adjustable parameters for plotsForMuller:
 ## 1) length of plot
 ## 2) width of plot
 ## 3) with or without error bars
 ## 4) with or without gene name.
 
-plotsForMuller <- function(the.data, output, use.theta=TRUE, fixations=TRUE, add.err.bars=FALSE, width.parameter=7, height.parameter=7, with.gene.name=TRUE) {
+plotsForMuller <- function(the.data, output, use.theta=TRUE, add.err.bars=FALSE, width.parameter=6, height.parameter=3, with.gene.name=TRUE, bottomline=TRUE) {
 
-  pdf(output, width=width.parameter,height=height.parameter, useDingbats=FALSE)
-  
-  snps.to.graph <- c()
-  if (fixations) snps.to.graph <- partitionSNPs(the.data, use.theta=use.theta, get.fixations=TRUE) else snps.to.graph <- partitionSNPs(the.data, use.theta=use.theta, get.fixations=FALSE)
-  ##Order these SNPs.
-  the.snp.order <- orderSNPs(the.data, fixations)
-  ordered.mutations <- subset(the.snp.order, the.snp.order %in% snps.to.graph)
+  ## Manually define the order in which to plot SNPs.
+  ordered.mutations <- c("Ara-1-fabR-snp","Ara-1-topA-snp","Ara-1-spoT-snp","Ara-1-pykF-snp","Ara-1-pykF..3-ins-u","Ara-1-mrdB-snp","Ara-1-pykF..4-snp","Ara-1-mreB-snp","Ara-1-yegI-snp","Ara-1-ybaL-ins-d","Ara-1-mrdA-snp","Ara-1-malT-snp","Ara-1-nagC-snp","Ara-1-infB-snp","Ara-1-rpsA-snp","Ara-1-gltB-del-d","Ara-1-yghJ-snp","Ara-1-rpsM-snp","Ara-1-yedW-yedX-snp","Ara-1-araJ-snp","Ara-1-yhdG-fis-snp","Ara-1-pflC-del-d","Ara-1-acs-nrfA-snp","Ara-1-atoS-snp","Ara-1-nuoM-snp","Ara-1-maeB-talA-snp","Ara-1-hsdM-snp","Ara-1-nadR..2-snp","Ara-1-nuoG-snp","Ara-1-elaD-snp","Ara-1-leuO-ilvI-snp","Ara-1-narI-ychS-snp","Ara-1-dhaM-snp","Ara-1-pcnB-snp","Ara-1-arcB-snp","Ara-1-ebgR-snp","Ara-1-iclR-snp","Ara-1-rspA-ynfA-snp","Ara-1-glpE-snp","Ara-1-ybjN-potF-snp","Ara-1-gltI-snp","Ara-1-rpsD-snp")
+
+  fixations <- partitionSNPs(the.data, use.theta=use.theta, get.fixations=TRUE)
+  non.fixations <- partitionSNPs(the.data, use.theta=use.theta, get.fixations=FALSE)
+
+  ## Save each plot in a list.
+  all.ggplots <- list()
   for (snp in ordered.mutations) {
     
     illumina.snp.data <- subset(the.data, SNP.Name == snp)
@@ -731,20 +820,28 @@ plotsForMuller <- function(the.data, output, use.theta=TRUE, fixations=TRUE, add
     
     ## Plot the trajectory and bottom line for the SNP.
     trajectory <- ggplot(data=cdata, aes(x=Generations,y=Frequency)) + geom_line() +
-      geom_line(aes(x=Generations, y=bottom)) + xlab("Generations") +
+      xlab("Time (generations)") +
       ylab("Relative Abundance") +
         theme_bw() + theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank()) + ylim(0,1.05)
-
+    ## Plot the bottom line if not Figure S1.
+    if (bottomline)
+      trajectory <- trajectory + geom_line(aes(x=Generations, y=bottom))
     limits <- aes(ymax=Upper, ymin=Lower)
     if (add.err.bars)
       trajectory <- trajectory + geom_errorbar(limits)
     if (with.gene.name)
-      trajectory = trajectory + ggtitle(snp)
-    print(trajectory)                   
-
+      trajectory <- trajectory + ggtitle(snp)
+    all.ggplots[[length(all.ggplots) +1]] <- trajectory
   }
+  ## Print to file.
+  pdf(output, width=width.parameter,height=height.parameter, useDingbats=FALSE)
+  for (p in all.ggplots)
+    print(p)                     
   dev.off()
 }
+
+###############################################
+
 
 ##This function superimpose graphs from a list of mixed plate datasets.
 ##It does not do this for all the data.
@@ -1100,10 +1197,10 @@ makeSimultaneousSweepHistogram <- function (the.final.data, outfile="/Users/Roha
 ##for plotting purposes. This is used in plotPyrosequencingResults and
 ##compareSequencingToGenotyping.
 preparePyrosequencingTable <- function(pyro.data) {
-  pyro.table <- subset(pyro.data,subset=sapply(pyro.data$Sample,function (x) ifelse(x < 6, FALSE,TRUE)), select=c("Description", "Locus", "Evolved.Frequency"))
-  ##rename "Description" to "Generation" and "Evolved.Frequency" to "Frequency."
+  pyro.table <- subset(pyro.data,subset=sapply(pyro.data$Sample,function (x) ifelse(x < 6, FALSE,TRUE)), select=c("Description", "Locus", "Calibrated.Evolved.Frequency"))
+  ##rename "Description" to "Generation", and change "Evolved.Frequency" to "Frequency."
   names(pyro.table)[names(pyro.table) == "Description"] <- "Generation"
-  names(pyro.table)[names(pyro.table) == "Evolved.Frequency"] <- "Frequency"
+  names(pyro.table)[names(pyro.table) == "Calibrated.Evolved.Frequency"] <- "Frequency"
   ##change Generation from a factor to actual numbers.
   pyro.table$Generation <- as.numeric(as.vector(pyro.table$Generation))
   return(pyro.table)
@@ -1118,9 +1215,13 @@ plotPyrosequencingResults <- function(pyro.data, outfile="/Users/Rohandinho/Desk
   my.plot <- ggplot(data.to.plot,
                     aes(x=Generation, y=Frequency,
                         group=Locus, colour=Locus)) +
-    geom_point() + geom_line()
-  my.plot + opts(title="Dynamics of Marker Alleles during Coexistence", panel.grid.minor = theme_blank(), panel.background = theme_rect(colour = "white"),
-                 axis.line = theme_segment())
+    geom_point() + geom_line() + theme_bw() +
+      theme(panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_blank(),
+            panel.background = element_blank(),
+            legend.key = element_blank()) + xlab("Time (generations)") +
+              theme(axis.line = element_line(color = 'black'))
   ggsave(outfile)
 }
 
@@ -1144,7 +1245,7 @@ makeGenotypingPyroPlot <- function (the.final.data, outfile="/Users/Rohandinho/D
                     aes(x=Generation, y=Frequency,
                         group=Locus, colour=Locus)) +
     geom_point() + geom_line()
-  my.plot + opts(title="Dynamics of Marker Alleles during Coexistence", panel.grid.minor = theme_blank(), panel.background = theme_rect(colour = "white"),
+  my.plot + opts(panel.grid.minor = theme_blank(), panel.background = theme_rect(colour = "white"),
                  axis.line = theme_segment())
   ggsave(outfile)
 }
